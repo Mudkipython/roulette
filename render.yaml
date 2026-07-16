@@ -3,9 +3,16 @@ services:
     name: roulette-education-simulator
     runtime: static
     plan: free
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --no-audit --no-fund && npm run build
     staticPublishPath: dist
     autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.1
+      - key: NPM_CONFIG_REGISTRY
+        value: https://registry.npmjs.org/
+      - key: NPM_CONFIG_REPLACE_REGISTRY_HOST
+        value: always
     headers:
       - path: /*
         name: X-Content-Type-Options
