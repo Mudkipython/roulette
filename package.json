@@ -1,9 +1,9 @@
 {
   "name": "roulette-education-simulator",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
   "type": "module",
-  "description": "Multilingual physically inspired 3D roulette education simulator demonstrating house edge and negative expected value.",
+  "description": "Multilingual 3D roulette education simulator with Liquid Glass-inspired navigation, rule lessons, and probability education.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",

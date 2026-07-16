@@ -1,81 +1,58 @@
-# Roulette Lab 3D — Automatic Table Edition
+# Roulette Lab v5
 
-A multilingual educational roulette simulator showing why negative expected value cannot be removed by betting systems.
+一个用于讲解轮盘规则、赌场优势和负数学期望的多语言3D网页。项目不连接真钱、账户或支付系统，所有模拟均在浏览器本地运行。
 
-## What changed in v4
+## v5 重点
 
-The simulator now behaves like a continuous automatic roulette table rather than a manually launched animation:
+- Liquid Glass-inspired 应用式界面
+- 游戏、规则教学、概率科普三个独立页面
+- 桌面端顶部标签栏、移动端底部标签栏
+- 游戏页分为下注台、下注单、数据三个紧凑面板
+- 四步规则教学与赔率速查表
+- 连续文章式概率科普，减少“AI卡片墙”观感
+- 中英法切换
+- Three.js 3D自动轮盘和2D回退
+- 多注、撤销、清空、重复下注、批量模拟
 
-1. The inner rotor turns counter-clockwise.
-2. The launcher sends the ball clockwise into the stationary outer track.
-3. Betting remains open during a visible countdown.
-4. Betting closes when the ball loses enough speed to leave the outer track.
-5. The ball moves inward along the sloped bowl, strikes deflectors, enters the rotating pocket ring, and settles.
+## 本地运行
 
-The camera is mathematically fixed for the entire session: there are no orbit controls, follow-camera transitions, shakes or loss animations.
-
-## Features
-
-- Separate stationary ball track and counter-clockwise rotating wheel rotor
-- Clockwise automatic ball launch
-- Betting countdown with a real lock point at track release
-- Physically inspired deceleration, inward bowl movement, deflector impacts and pocket settling
-- Fully fixed camera with no orbit controls, following, damping or shake
-- Correct horizontal pocket geometry with the official wheel order and number colors
-- Ball and machine share one local coordinate system, so the ball settles on the pocket ring instead of the hub
-- Automatic recurring launches; one pause/resume control replaces per-round launch buttons
-- Multiple simultaneous bets with quick chips, undo, remove, clear and repeat-last-round controls
-- Clickable 3D pockets and felt-style betting board
-- Restrained win effects, pocket glow and synthesized sound
-- European single-zero and American double-zero wheels
-- Continuous automatic rounds plus 100 / 1,000 / 10,000-round fast simulation based on the previous bet portfolio
-- Bankroll, turnover, expected loss, actual P/L and return-rate tracking
-- Chinese, English and French interface
-- Reduced-motion support and 2D fallback
-- No login, payments, server-side data or real-money gambling
-
-## Simulation scope
-
-The motion is a physically inspired educational model, not a calibrated engineering replica of a specific commercial machine. The direction, phase sequence, deceleration logic and inward movement are modeled consistently; the final pocket is sampled first with `crypto.getRandomValues()` and the late settling phase guides the ball into that sampled pocket. Animation never changes the probability distribution.
-
-## Local development
-
-```bash
-npm ci
-npm run dev
-```
-
-## Production build
+需要 Node.js 22：
 
 ```bash
 npm ci --no-audit --no-fund
+npm run dev
+```
+
+生产构建：
+
+```bash
 npm run build
 ```
 
-The deployable output is generated in `dist/`.
+输出目录为 `dist/`。
 
-## Render deployment
+## Render
 
-The included `render.yaml` pins Node 22.22.1 and uses the public npm registry.
-
-- Build command: `npm ci --no-audit --no-fund && npm run build`
-- Publish directory: `dist`
-- Runtime: Render Static Site
-
-## Educational model
-
-- European single-zero house edge: `1 / 37 ≈ 2.70%`
-- American double-zero house edge: `2 / 38 ≈ 5.26%`
+静态站点设置：
 
 ```text
-Expected loss = total amount wagered × house edge
+Build Command: npm ci --no-audit --no-fund && npm run build
+Publish Directory: dist
 ```
 
-## License
+仓库中的 `render.yaml` 已固定 Node 22.22.1，并使用公共 npm registry。
 
-MIT. Three.js is used under its MIT license.
+## 设计说明
 
-## Preview files
+该网页参考 Apple 对 Liquid Glass、层级、和谐与一致性的公开设计指导，但不是 Apple 产品、官方模板或系统组件的复制品。毛玻璃主要用于导航与操作层，正文和游戏内容保持清晰、稳定和高对比度。
 
-- `docs/preview-3d.png`: corrected horizontal pocket ring and outer-track ball
-- `docs/preview-interface.png`: automatic-round multiple-bet interface and 2D fallback
+## 技术栈
+
+- Three.js
+- Vite
+- 原生 HTML / CSS / JavaScript
+- Web Crypto API
+
+## 免责声明
+
+项目仅用于概率教育。短期获胜不代表存在可持续盈利策略。赌博可能造成财务与心理伤害。

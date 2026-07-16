@@ -1,21 +1,36 @@
-# Roulette Lab 3D v4：Render 部署说明
+# Render 部署说明
 
-本版使用 Three.js、Vite 和固定 Node 22 LTS。仓库中的 `package-lock.json` 已改为公共 npm registry，不再包含内部镜像地址。
+## 1. 覆盖 GitHub 文件
 
-## 推荐：覆盖 GitHub 仓库后清缓存部署
+解压项目，将所有文件上传到 GitHub 仓库根目录并覆盖旧版本。确认根目录直接包含：
 
-把压缩包内的文件上传并覆盖到 GitHub 仓库根目录。不要上传 `node_modules/`；`dist/` 可不上传。
+```text
+index.html
+app.js
+styles.css
+src/
+package.json
+package-lock.json
+render.yaml
+```
 
-Render 的 Static Site 设置：
+## 2. Render 设置
+
+进入 Render 静态站点：
+
+```text
+Settings → Build & Deploy
+```
+
+填写：
 
 ```text
 Root Directory: 留空
 Build Command: npm ci --no-audit --no-fund && npm run build
 Publish Directory: dist
-Branch: main
 ```
 
-环境变量：
+环境变量可由 `render.yaml` 自动提供。手动设置时使用：
 
 ```text
 NODE_VERSION=22.22.1
@@ -23,52 +38,20 @@ NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
 NPM_CONFIG_REPLACE_REGISTRY_HOST=always
 ```
 
-如果使用仓库内的 `render.yaml` 创建 Blueprint，上述设置会自动写入。
+## 3. 清缓存部署
 
-上传后执行：
+选择：
 
 ```text
 Manual Deploy → Clear build cache & deploy
 ```
 
-必须清除旧缓存，避免继续使用之前 Node 24 或损坏的 npm 安装缓存。
+普通 Deploy 可能继续使用旧CSS和旧JavaScript缓存，因此版本大改后建议清除构建缓存。
 
-## 正常日志
+## 4. 部署后检查
 
-```text
-Using Node.js version 22.22.1
-npm ci --no-audit --no-fund
-npm run build
-vite build
-built in ...
-```
-
-随后站点状态应变为 **Live**。
-
-## 常见问题
-
-### `Exit handler never called`
-
-确认 Node 已固定为 `22.22.1`，然后使用 **Clear build cache & deploy**。
-
-### `Could not find package.json`
-
-所有项目文件应位于仓库根目录，Root Directory 留空。
-
-### `Publish directory dist does not exist`
-
-确认 Build Command 包含 `npm run build`，Publish Directory 为 `dist`。
-
-### 页面还是旧动画或仍然需要手动发球
-
-确认 GitHub 最新 commit 已包含新的：
-
-```text
-src/roulette3d.js
-app.js
-index.html
-styles.css
-package-lock.json
-```
-
-然后清缓存重部署。
+- 顶部应显示“游戏／规则教学／概率科普”三个标签。
+- 手机端应显示底部标签栏。
+- 游戏页应有“下注台／下注单／数据”三个分段按钮。
+- 规则页应能切换四个教学步骤。
+- 语言切换应同步更新三个页面。

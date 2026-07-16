@@ -131,6 +131,68 @@ Object.assign(translations.fr, {
   expectedLossBet:'Perte prévue de la manche', spinning:'La bille est lancée automatiquement. Les mises restent ouvertes pendant le compte à rebours extérieur.'
 });
 
+
+Object.assign(translations.zh, {
+  navPlay:'游戏', navRules:'规则教学', navLearn:'概率科普', playPageTitle:'自动轮盘模拟',
+  inspectorBoard:'下注台', inspectorSlip:'下注单', inspectorStats:'数据', needRules:'不懂规则？',
+  rulesKicker:'第一次玩也能看懂', rulesPageTitle:'四步学会轮盘规则', rulesPageIntro:'不需要背号码顺序。先理解下注区域、发球流程和赔率，再回到模拟器实践。',
+  lessonOneShort:'认识桌面', lessonTwoShort:'开放下注', lessonThreeShort:'停止下注', lessonFourShort:'开奖结算',
+  lessonOneTitle:'先选择筹码，再点击下注区域', lessonOneBody:'数字格属于内围下注；红黑、单双、大小、十二数和列属于外围下注。可同时押多个区域。',
+  lessonOnePointA:'单号命中率低、赔率高。', lessonOnePointB:'红黑命中率接近一半、赔率为1:1。', lessonOnePointC:'0和00不属于红黑、单双或大小。',
+  lessonTwoTitle:'发球后仍然可以下注', lessonTwoBody:'自动桌先让转子逆时针旋转，再把小球沿固定外轨顺时针发出。外轨阶段显示倒计时，期间可追加、撤销或清空下注。',
+  phaseLaunch:'自动发球', phaseOpen:'开放下注', phaseClose:'停止下注', phaseResult:'开奖',
+  lessonThreeTitle:'小球离开外轨时停止下注', lessonThreeBody:'当球速下降、离心支撑减弱并开始向内滑落，下注立即锁定。之后只能等待球碰撞挡块并进入号码槽。',
+  lessonFourTitle:'按落袋号码结算所有下注', lessonFourBody:'同一局可以有多笔下注。每笔分别判断是否覆盖最终号码，再按净赔率结算；没中的下注全部损失。',
+  exampleBet:'示例：10押红 + 5押17', exampleResult:'结果17：两笔同时中奖', previous:'上一步', next:'下一步',
+  quickReference:'快速查表', payoutReference:'常见下注与净赔率', payoutReferenceNote:'赔率是净赢金额；中奖时本金会一并退回。', coveredNumbers:'覆盖号码', difficulty:'体验',
+  splitBet:'两个相邻号码', streetBet:'一横排', cornerBet:'四角', dozenOrColumn:'十二数／列', evenMoneyBet:'红黑／单双／大小',
+  highVariance:'波动极高', mediumVariance:'波动较高', balancedVariance:'中等波动', lowVariance:'波动较低', practiceNow:'回到游戏实践',
+  learnPageTitle:'为什么长期无法靠轮盘赢钱', learnPageIntro:'赌场优势不保证你每局都输，但它让每一元累计下注都带有负期望。',
+  learnIndexEdge:'赌场优势', learnIndexTurnover:'资金流水', learnIndexFallacy:'赌徒谬误', learnIndexCompare:'项目比较', learnIndexResponsible:'负责任娱乐',
+  edgeSectionTitle:'赔率比公平赔率少一点，赌场就能长期盈利', edgeSectionBody:'欧式轮盘有37个结果，但单号只赔35:1。红黑也不是50%，因为绿色0会让双方都输。', redProbabilityNote:'欧式轮盘押红的真实中奖率',
+  returnToGame:'回到模拟器'
+});
+Object.assign(translations.en, {
+  navPlay:'Play', navRules:'How to play', navLearn:'Probability', playPageTitle:'Automatic roulette table',
+  inspectorBoard:'Table', inspectorSlip:'Bet slip', inspectorStats:'Results', needRules:'Need the rules?',
+  rulesKicker:'Clear enough for a first round', rulesPageTitle:'Learn roulette in four steps', rulesPageIntro:'You do not need to memorize the wheel order. Learn the betting areas, round flow, and payouts, then practise in the simulator.',
+  lessonOneShort:'Read the table', lessonTwoShort:'Betting open', lessonThreeShort:'Bets close', lessonFourShort:'Settle bets',
+  lessonOneTitle:'Choose a chip, then select betting areas', lessonOneBody:'Number squares are inside bets. Red/black, odd/even, high/low, dozens, and columns are outside bets. You may combine several bets.',
+  lessonOnePointA:'Straight-up numbers hit rarely and pay more.', lessonOnePointB:'Red or black wins almost half the time and pays 1:1.', lessonOnePointC:'0 and 00 are not red/black, odd/even, or high/low.',
+  lessonTwoTitle:'Betting stays open after launch', lessonTwoBody:'The rotor turns counter-clockwise and the ball launches clockwise on the fixed outer track. During the countdown, you can add, undo, or clear bets.',
+  phaseLaunch:'Auto launch', phaseOpen:'Betting open', phaseClose:'No more bets', phaseResult:'Result',
+  lessonThreeTitle:'Betting closes as the ball leaves the outer track', lessonThreeBody:'As speed falls and centrifugal support weakens, the ball starts moving inward and all bets lock. It then meets the deflectors and pocket ring.',
+  lessonFourTitle:'Every bet settles against the final pocket', lessonFourBody:'A round can contain several bets. Each bet is checked separately against the result and paid at its net odds; losing bets are removed.',
+  exampleBet:'Example: 10 on red + 5 on 17', exampleResult:'Result 17: both bets win', previous:'Previous', next:'Next',
+  quickReference:'Quick reference', payoutReference:'Common bets and net payouts', payoutReferenceNote:'The payout is net profit; the original stake is also returned on a win.', coveredNumbers:'Numbers covered', difficulty:'Experience',
+  splitBet:'Two adjacent numbers', streetBet:'One row of three', cornerBet:'Four-number corner', dozenOrColumn:'Dozen / column', evenMoneyBet:'Red-black / odd-even / high-low',
+  highVariance:'Very high variance', mediumVariance:'High variance', balancedVariance:'Moderate variance', lowVariance:'Lower variance', practiceNow:'Practise in the game',
+  learnPageTitle:'Why roulette cannot produce reliable long-term profit', learnPageIntro:'The house edge does not make every round a loss, but it gives every unit of cumulative wagering a negative expectation.',
+  learnIndexEdge:'House edge', learnIndexTurnover:'Turnover', learnIndexFallacy:'Gambler’s fallacy', learnIndexCompare:'Game comparison', learnIndexResponsible:'Responsible play',
+  edgeSectionTitle:'Pay slightly less than fair odds, and the house wins over time', edgeSectionBody:'European roulette has 37 outcomes, but a straight-up number pays only 35:1. Red is not 50% either, because green 0 defeats both colours.', redProbabilityNote:'True probability of red on a European wheel',
+  returnToGame:'Return to simulator'
+});
+Object.assign(translations.fr, {
+  navPlay:'Jeu', navRules:'Règles', navLearn:'Probabilités', playPageTitle:'Table de roulette automatique',
+  inspectorBoard:'Table', inspectorSlip:'Mises', inspectorStats:'Résultats', needRules:'Besoin des règles ?',
+  rulesKicker:'Compréhensible dès la première partie', rulesPageTitle:'Apprendre la roulette en quatre étapes', rulesPageIntro:'Inutile de mémoriser l’ordre de la roue. Comprenez les zones de mise, le déroulement et les paiements, puis pratiquez dans le simulateur.',
+  lessonOneShort:'Lire la table', lessonTwoShort:'Mises ouvertes', lessonThreeShort:'Fin des mises', lessonFourShort:'Règlement',
+  lessonOneTitle:'Choisissez un jeton puis une zone de mise', lessonOneBody:'Les cases numérotées sont des mises intérieures. Rouge/noir, pair/impair, manque/passe, douzaines et colonnes sont des mises extérieures. Plusieurs mises peuvent être combinées.',
+  lessonOnePointA:'Un numéro plein gagne rarement mais paie davantage.', lessonOnePointB:'Rouge ou noir gagne presque une fois sur deux et paie 1:1.', lessonOnePointC:'0 et 00 ne sont ni rouge/noir, ni pair/impair, ni manque/passe.',
+  lessonTwoTitle:'Les mises restent ouvertes après le lancement', lessonTwoBody:'Le rotor tourne dans le sens antihoraire et la bille part dans le sens horaire sur la piste extérieure fixe. Pendant le compte à rebours, on peut ajouter, annuler ou effacer des mises.',
+  phaseLaunch:'Lancement auto', phaseOpen:'Mises ouvertes', phaseClose:'Rien ne va plus', phaseResult:'Résultat',
+  lessonThreeTitle:'Les mises ferment quand la bille quitte la piste', lessonThreeBody:'Quand la vitesse baisse et que le soutien centrifuge diminue, la bille descend vers l’intérieur et toutes les mises sont verrouillées.',
+  lessonFourTitle:'Chaque mise est réglée selon la case finale', lessonFourBody:'Une manche peut contenir plusieurs mises. Chacune est vérifiée séparément et payée selon sa cote nette; les mises perdantes sont retirées.',
+  exampleBet:'Exemple : 10 sur rouge + 5 sur 17', exampleResult:'Résultat 17 : les deux mises gagnent', previous:'Précédent', next:'Suivant',
+  quickReference:'Référence rapide', payoutReference:'Mises courantes et paiements nets', payoutReferenceNote:'Le paiement est le bénéfice net; la mise initiale est aussi rendue en cas de gain.', coveredNumbers:'Numéros couverts', difficulty:'Expérience',
+  splitBet:'Deux numéros voisins', streetBet:'Rangée de trois', cornerBet:'Carré de quatre', dozenOrColumn:'Douzaine / colonne', evenMoneyBet:'Rouge-noir / pair-impair / manque-passe',
+  highVariance:'Variance très forte', mediumVariance:'Variance forte', balancedVariance:'Variance moyenne', lowVariance:'Variance plus faible', practiceNow:'Pratiquer dans le jeu',
+  learnPageTitle:'Pourquoi la roulette ne peut pas assurer un profit durable', learnPageIntro:'L’avantage de la maison ne fait pas perdre chaque manche, mais donne une espérance négative à chaque unité rejouée.',
+  learnIndexEdge:'Avantage maison', learnIndexTurnover:'Volume de mises', learnIndexFallacy:'Erreur du joueur', learnIndexCompare:'Comparaison', learnIndexResponsible:'Jeu responsable',
+  edgeSectionTitle:'Un paiement légèrement inférieur à la cote juste suffit à la maison', edgeSectionBody:'La roulette européenne compte 37 résultats, mais un numéro plein ne paie que 35:1. Rouge n’est pas à 50 %, car le 0 vert fait perdre les deux couleurs.', redProbabilityNote:'Probabilité réelle du rouge sur une roue européenne',
+  returnToGame:'Retour au simulateur'
+});
+
 const els = Object.fromEntries([...document.querySelectorAll('[id]')].map(element => [element.id, element]));
 const wheelCtx = els.wheelCanvas.getContext('2d');
 const chartCtx = els.profitChart.getContext('2d');
@@ -397,6 +459,7 @@ function renderBetSlip() {
 
   const total = currentBetTotal();
   els.totalCurrentBet.textContent = formatMoney(total);
+  document.querySelectorAll('.mirror-total-current').forEach(element => { element.textContent = formatMoney(total); });
   els.availableBankroll.textContent = formatMoney(Math.max(0, state.bankroll - total));
   els.edgeValue.textContent = formatPercent(houseEdge(), 2);
   els.expectedLossValue.textContent = formatMoney(total * houseEdge());
@@ -857,6 +920,57 @@ function shortestAngle(from, to) {
   return delta;
 }
 
+
+const validViews = new Set(['play', 'rules', 'learn']);
+let activeTutorialStep = 0;
+
+function setInspectorPane(name) {
+  const valid = new Set(['board', 'slip', 'stats']);
+  const target = valid.has(name) ? name : 'board';
+  document.querySelectorAll('[data-inspector]').forEach(pane => pane.classList.toggle('is-active', pane.dataset.inspector === target));
+  document.querySelectorAll('[data-inspector-target]').forEach(button => button.setAttribute('aria-selected', String(button.dataset.inspectorTarget === target)));
+  if (target === 'stats') requestAnimationFrame(drawChart);
+}
+
+function setTutorialStep(index) {
+  const steps = [...document.querySelectorAll('[data-tutorial]')];
+  if (!steps.length) return;
+  activeTutorialStep = Math.max(0, Math.min(steps.length - 1, Number(index) || 0));
+  steps.forEach((step, stepIndex) => step.classList.toggle('is-active', stepIndex === activeTutorialStep));
+  document.querySelectorAll('[data-tutorial-target]').forEach((button, stepIndex) => {
+    if (stepIndex === activeTutorialStep) button.setAttribute('aria-current', 'step');
+    else button.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('.lesson-dots i').forEach((dot, stepIndex) => dot.classList.toggle('active', stepIndex === activeTutorialStep));
+  if (els.lessonPrev) els.lessonPrev.disabled = activeTutorialStep === 0;
+  if (els.lessonNext) els.lessonNext.disabled = activeTutorialStep === steps.length - 1;
+}
+
+function setAppView(name, { updateHash = true } = {}) {
+  const view = validViews.has(name) ? name : 'play';
+  document.body.dataset.view = view;
+  document.querySelectorAll('.app-view').forEach(section => section.classList.toggle('is-active', section.dataset.view === view));
+  document.querySelectorAll('.top-tabs [data-view-target], .bottom-tabs [data-view-target]').forEach(button => button.setAttribute('aria-selected', String(button.dataset.viewTarget === view)));
+  if (updateHash && location.hash !== `#${view}`) history.replaceState(null, '', `#${view}`);
+  const active = document.querySelector(`.app-view[data-view="${view}"]`);
+  if (active) active.scrollTop = 0;
+
+  if (view !== 'play') {
+    if (autoEnabled) toggleAuto();
+    rouletteScene?.setSound(false);
+  } else {
+    rouletteScene?.setSound(Boolean(els.soundToggle?.checked));
+    requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+  }
+}
+
+document.querySelectorAll('[data-view-target]').forEach(button => button.addEventListener('click', () => setAppView(button.dataset.viewTarget)));
+document.querySelectorAll('[data-inspector-target]').forEach(button => button.addEventListener('click', () => setInspectorPane(button.dataset.inspectorTarget)));
+document.querySelectorAll('[data-tutorial-target]').forEach(button => button.addEventListener('click', () => setTutorialStep(button.dataset.tutorialTarget)));
+els.lessonPrev?.addEventListener('click', () => setTutorialStep(activeTutorialStep - 1));
+els.lessonNext?.addEventListener('click', () => setTutorialStep(activeTutorialStep + 1));
+window.addEventListener('hashchange', () => setAppView(location.hash.slice(1), { updateHash: false }));
+
 els.languageSelect.value = lang;
 els.languageSelect.addEventListener('change', event => { lang = event.target.value; applyLanguage(); });
 
@@ -875,7 +989,7 @@ els.pauseButton.addEventListener('click', toggleAuto);
 els.batchButton.addEventListener('click', runBatch);
 els.resetButton.addEventListener('click', () => resetSimulation(true));
 els.resetButtonSecondary.addEventListener('click', () => resetSimulation(true));
-els.soundToggle.addEventListener('change', () => rouletteScene?.setSound(els.soundToggle.checked));
+els.soundToggle.addEventListener('change', () => rouletteScene?.setSound(els.soundToggle.checked && document.body.dataset.view === 'play'));
 els.startingBankroll.addEventListener('change', () => { if (!roundInProgress && state.spins === 0) resetSimulation(false); });
 els.wheelType.addEventListener('change', () => {
   if (roundInProgress || autoEnabled) {
@@ -902,9 +1016,12 @@ rouletteScene.init();
 rouletteScene.setSound(els.soundToggle.checked);
 
 applyLanguage();
+setInspectorPane('board');
+setTutorialStep(0);
 updateRoundPhase('idle');
 updateAll();
 ensureAutoLoop();
+setAppView(location.hash.slice(1) || 'play', { updateHash: false });
 
 window.__rouletteLab = {
   getState: () => structuredClone(state),
