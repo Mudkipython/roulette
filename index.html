@@ -79,6 +79,16 @@
                 <strong id="cinematicResultNumber">—</strong>
               </div>
             </div>
+              <aside id="behaviorCoach" class="behavior-coach" aria-live="polite" hidden>
+                <span class="coach-rule" aria-hidden="true"></span>
+                <div class="coach-copy">
+                  <span class="coach-label" data-i18n="coachLabel">实时概率提示</span>
+                  <strong id="coachTitle">—</strong>
+                  <p id="coachBody">—</p>
+                </div>
+                <button id="coachLearnButton" class="coach-learn" type="button" data-i18n="coachLearn">查看原理</button>
+                <button id="coachDismissButton" class="coach-dismiss" type="button" aria-label="Dismiss">×</button>
+              </aside>
           </div>
 
           <div class="result-dock glass-surface">
@@ -340,92 +350,137 @@
     </section>
 
     <section id="learnView" class="app-view" data-view="learn" aria-labelledby="learnHeading">
-      <div class="editorial-shell learn-shell">
-        <header class="editorial-header learn-header">
-          <div>
-            <p class="view-eyebrow" data-i18n="knowledgeKicker">关键知识点</p>
-            <h1 id="learnHeading" data-i18n="learnPageTitle">为什么长期无法靠轮盘赢钱</h1>
-            <p data-i18n="learnPageIntro">赌场优势不保证你每局都输，但它让每一元累计下注都带有负期望。</p>
+      <div class="editorial-shell learn-shell human-editorial">
+        <header class="learn-masthead">
+          <div class="learn-title-block">
+            <span class="issue-mark" aria-hidden="true">VOL. 01</span>
+            <h1 id="learnHeading" data-i18n="learnPageTitle">轮盘不是预测题，而是一门负期望实验</h1>
+            <p data-i18n="learnPageIntro">从赔率、独立事件、下注系统到破产风险，用可操作的小实验解释为什么“看起来有道理”的策略仍然无法改变长期数学期望。</p>
           </div>
-          <div class="formula-display">
-            <span data-i18n="coreFormulaLabel">长期预计损失</span>
-            <strong data-i18n="coreFormula">总投注流水 × 赌场优势</strong>
-          </div>
+          <figure class="expectation-poster" aria-label="Expected loss formula">
+            <figcaption data-i18n="coreFormulaLabel">长期预计损失</figcaption>
+            <strong data-i18n="coreFormula">累计投注流水 × 赌场优势</strong>
+            <span>European 2.70% · American 5.26%</span>
+          </figure>
         </header>
 
-        <div class="learn-layout">
+        <div class="learn-workbench">
           <aside class="learn-index" aria-label="Learning topics">
-            <a href="#edgeSection" data-i18n="learnIndexEdge">赌场优势</a>
-            <a href="#turnoverSection" data-i18n="learnIndexTurnover">资金流水</a>
-            <a href="#fallacySection" data-i18n="learnIndexFallacy">赌徒谬误</a>
-            <a href="#comparisonSection" data-i18n="learnIndexCompare">项目比较</a>
-            <a href="#responsibleSection" data-i18n="learnIndexResponsible">负责任娱乐</a>
+            <div class="learn-index-heading" data-i18n="chapterIndex">章节目录</div>
+            <button type="button" data-learn-target="edge" aria-current="true"><span>01</span><strong data-i18n="learnIndexEdge">赔率与赌场优势</strong></button>
+            <button type="button" data-learn-target="streaks"><span>02</span><strong data-i18n="learnIndexFallacy">连开与独立事件</strong></button>
+            <button type="button" data-learn-target="strategies"><span>03</span><strong data-i18n="learnIndexStrategies">下注策略解剖</strong></button>
+            <button type="button" data-learn-target="turnover"><span>04</span><strong data-i18n="learnIndexTurnover">流水与时间</strong></button>
+            <button type="button" data-learn-target="comparison"><span>05</span><strong data-i18n="learnIndexCompare">项目比较</strong></button>
+            <button type="button" data-learn-target="responsible"><span>06</span><strong data-i18n="learnIndexResponsible">止损与边界</strong></button>
           </aside>
 
-          <article class="learn-article">
-            <section id="edgeSection" class="article-section">
-              <span class="article-number">01</span>
-              <div>
-                <h2 data-i18n="edgeSectionTitle">赔率比公平赔率少一点，赌场就能长期盈利</h2>
-                <p data-i18n="edgeSectionBody">欧式轮盘有37个结果，但单号只赔35:1。红黑也不是50%，因为绿色0会让双方都输。</p>
-                <div class="equation-row"><code>18 / 37 = 48.65%</code><span data-i18n="redProbabilityNote">欧式轮盘押红的真实中奖率</span></div>
+          <article class="learn-stage">
+            <section class="learn-panel is-active" data-learn-panel="edge" aria-labelledby="edgeTitle">
+              <div class="chapter-heading">
+                <span>01</span>
+                <div><p data-i18n="chapterEdgeKicker">公平赔率与实际赔率之间的一格空隙</p><h2 id="edgeTitle" data-i18n="edgeSectionTitle">赌场不需要操纵结果，只需要少赔一点</h2></div>
               </div>
-            </section>
-
-            <section id="turnoverSection" class="article-section">
-              <span class="article-number">02</span>
-              <div>
-                <h2 data-i18n="turnoverTitle">真正决定损失的是流水</h2>
-                <p data-i18n="turnoverBody">带着100元并不代表最多只下注100元。同一笔钱赢回后再次下注，会形成数倍甚至数十倍流水。</p>
-                <div class="turnover-strip"><span>¥100</span><i>→</i><span>¥500</span><i>→</i><strong>¥1,000</strong></div>
-              </div>
-            </section>
-
-            <section id="fallacySection" class="article-section">
-              <span class="article-number">03</span>
-              <div>
-                <h2 data-i18n="fallacyTitle">连续出红，不会让黑“该出了”</h2>
-                <p data-i18n="fallacyBody">独立轮盘的下一局概率不会被之前结果改变。寻找“冷热号”只是把随机波动误认为规律。</p>
-                <div class="sequence-demo"><span class="red"></span><span class="red"></span><span class="red"></span><span class="red"></span><b>?</b></div>
-              </div>
-            </section>
-
-            <section class="article-section">
-              <span class="article-number">04</span>
-              <div>
-                <h2 data-i18n="martingaleTitle">翻倍下注不能改变数学期望</h2>
-                <p data-i18n="martingaleBody">马丁格尔策略把许多小赢换成一次巨大亏损。连续6次失利后，10元起注累计需要630元。</p>
-                <div class="doubling-row"><span>10</span><span>20</span><span>40</span><span>80</span><span>160</span><span>320</span></div>
-              </div>
-            </section>
-
-            <section id="comparisonSection" class="article-section comparison-article">
-              <span class="article-number">05</span>
-              <div>
-                <h2 data-i18n="comparisonTitle">每下注100元的长期平均损失</h2>
-                <div class="comparison-list">
-                  <div><span data-i18n="blackjack">21点</span><small data-i18n="blackjackCondition">良好规则＋严格基本策略</small><strong>≈ ¥0.50</strong></div>
-                  <div><span data-i18n="baccarat">百家庄</span><small data-i18n="baccaratCondition">只押庄，标准5%佣金</small><strong>≈ ¥1.06</strong></div>
-                  <div><span data-i18n="frenchRoulette">法式轮盘</span><small>La Partage</small><strong>≈ ¥1.35</strong></div>
-                  <div class="emphasis"><span data-i18n="europeanRoulette">欧式轮盘</span><small data-i18n="singleZero">单零</small><strong>≈ ¥2.70</strong></div>
-                  <div><span data-i18n="americanRoulette">美式轮盘</span><small data-i18n="doubleZero">双零</small><strong>≈ ¥5.26</strong></div>
+              <div class="editorial-grid two-column">
+                <div class="prose-column">
+                  <p class="lead" data-i18n="edgeLead">欧式轮盘的37个格子若完全等概率，单号的公平净赔率应是36:1；赌场只赔35:1。少掉的那一倍，就是每一元下注上的长期优势。</p>
+                  <p data-i18n="edgeSectionBody">押红同样不是五五开：18个红色面对18个黑色和1个绿色0。0出现时，红黑双方都输。</p>
+                  <blockquote data-i18n="edgeQuote">赌场优势不是“每局都会收走2.7%”，而是大量重复下注后，每100元流水平均留下约2.70元。</blockquote>
                 </div>
-                <p class="fine-print" data-i18n="comparisonNote">这些是常见规则下的近似值；具体桌面规则、下注速度和错误决策会改变实际损失。</p>
+                <figure class="odds-figure">
+                  <div class="pocket-ledger"><span class="red">18 RED</span><span class="black">18 BLACK</span><span class="green">1 ZERO</span></div>
+                  <div class="odds-ruler"><span style="--w:48.65%">48.65%</span><i></i><b style="--w:51.35%">51.35%</b></div>
+                  <figcaption><code>18 / 37 = 48.65%</code><span data-i18n="redProbabilityNote">欧式轮盘押红的真实中奖率</span></figcaption>
+                </figure>
+              </div>
+              <div class="myth-line"><span data-i18n="changesLabel">它改变了什么</span><strong data-i18n="edgeChanges">长期平均回报</strong><span data-i18n="notChangesLabel">它没有改变什么</span><strong data-i18n="edgeNotChanges">单局仍可能大赢</strong></div>
+            </section>
+
+            <section class="learn-panel" data-learn-panel="streaks" aria-labelledby="streakTitle">
+              <div class="chapter-heading"><span>02</span><div><p data-i18n="chapterStreakKicker">把随机波动误认成趋势，是最常见的错觉</p><h2 id="streakTitle" data-i18n="fallacyTitle">连续出红，不会让黑“该出了”</h2></div></div>
+              <div class="editorial-grid two-column">
+                <div class="prose-column">
+                  <p class="lead" data-i18n="fallacyLead">每次合规轮盘转动都近似独立。前面出现多少次红，并不会改变下一次红、黑或绿色0的结构性概率。</p>
+                  <p data-i18n="fallacyBody">“黑该出了”叫赌徒谬误；“红正在走热”叫热手谬误。两种说法方向相反，却都把历史序列赋予了它没有的预测能力。</p>
+                  <div class="margin-note"><b data-i18n="remember">记住</b><span data-i18n="independenceNote">历史结果可以描述过去，不能给下一颗球增加记忆。</span></div>
+                </div>
+                <div class="streak-lab">
+                  <div class="streak-sequence" id="streakLabSequence" aria-label="Streak sequence"><span class="red"></span><span class="red"></span><span class="red"></span><span class="red"></span><b>?</b></div>
+                  <div class="next-spin-probabilities"><div><span data-i18n="betRed">红色</span><strong>48.65%</strong></div><div><span data-i18n="betBlack">黑色</span><strong>48.65%</strong></div><div><span>0</span><strong>2.70%</strong></div></div>
+                  <button id="streakLabRun" class="editorial-action" type="button" data-i18n="streakLabRun">随机生成20次，看看连开有多常见</button>
+                  <div id="streakLabResults" class="streak-lab-results" aria-live="polite"></div>
+                </div>
               </div>
             </section>
 
-            <section id="responsibleSection" class="article-section responsible-article">
-              <span class="article-number">06</span>
-              <div>
-                <h2 data-i18n="responsibleTitle">最有效的“策略”是限制金额和时间。</h2>
-                <ul class="plain-list responsible-list">
-                  <li data-i18n="responsibleOne">只使用可以完全损失的娱乐预算。</li>
-                  <li data-i18n="responsibleTwo">不要追损，不借钱，不把赌博当作收入来源。</li>
-                  <li data-i18n="responsibleThree">预先设定停止时间和损失上限。</li>
-                </ul>
-                <button class="inline-cta" type="button" data-view-target="play" data-i18n="returnToGame">回到模拟器</button>
+            <section class="learn-panel" data-learn-panel="strategies" aria-labelledby="strategyTitle">
+              <div class="chapter-heading"><span>03</span><div><p data-i18n="chapterStrategyKicker">策略改变下注路径，不改变轮盘赔率</p><h2 id="strategyTitle" data-i18n="strategySectionTitle">六种常见下注系统，逐个拆开看</h2></div></div>
+              <div class="strategy-selector" role="tablist" aria-label="Betting strategies">
+                <button type="button" data-strategy="flat" aria-selected="true" data-i18n="strategyFlat">固定下注</button>
+                <button type="button" data-strategy="martingale" aria-selected="false" data-i18n="strategyMartingale">马丁格尔</button>
+                <button type="button" data-strategy="fibonacci" aria-selected="false" data-i18n="strategyFibonacci">斐波那契</button>
+                <button type="button" data-strategy="dalembert" aria-selected="false" data-i18n="strategyDalembert">达朗贝尔</button>
+                <button type="button" data-strategy="labouchere" aria-selected="false" data-i18n="strategyLabouchere">拉布谢尔</button>
+                <button type="button" data-strategy="hotcold" aria-selected="false" data-i18n="strategyHotCold">冷热号</button>
+              </div>
+              <div class="strategy-sheet">
+                <div class="strategy-copy">
+                  <span id="strategyVerdict" class="strategy-verdict">—</span>
+                  <h3 id="strategyName">—</h3>
+                  <p id="strategyDescription">—</p>
+                  <dl><div><dt data-i18n="changesLabel">它改变了什么</dt><dd id="strategyChanges">—</dd></div><div><dt data-i18n="notChangesLabel">它没有改变什么</dt><dd id="strategyDoesNotChange">—</dd></div></dl>
+                </div>
+                <div class="strategy-calculator">
+                  <label><span data-i18n="baseBet">基础下注</span><input id="strategyBaseBet" type="range" min="1" max="50" value="10" step="1"><output id="strategyBaseBetValue">10</output></label>
+                  <label><span data-i18n="lossStreak">连续失利次数</span><input id="strategyLosses" type="range" min="1" max="10" value="6" step="1"><output id="strategyLossesValue">6</output></label>
+                  <div id="strategySequence" class="strategy-sequence" aria-label="Bet sequence"></div>
+                  <div class="strategy-totals"><div><span data-i18n="nextBet">下一注</span><strong id="strategyNextBet">—</strong></div><div><span data-i18n="bankrollRequired">累计所需资金</span><strong id="strategyBankroll">—</strong></div></div>
+                </div>
+              </div>
+              <div class="strategy-matrix">
+                <div><b data-i18n="strategyQuestionOne">为什么经常“小赢”？</b><p data-i18n="strategyAnswerOne">因为多数策略把大量常见的小利润放在前面，把罕见但巨大的亏损推迟到长连败时出现。</p></div>
+                <div><b data-i18n="strategyQuestionTwo">为什么回测看起来有效？</b><p data-i18n="strategyAnswerTwo">如果样本没有覆盖足够长的极端连败，策略的尾部风险就不会显现。</p></div>
+                <div><b data-i18n="strategyQuestionThree">能否靠停赢止损修复？</b><p data-i18n="strategyAnswerThree">它能限制单次会话的损失或时间，但不能把负期望变成正期望。</p></div>
               </div>
             </section>
+
+            <section class="learn-panel" data-learn-panel="turnover" aria-labelledby="turnoverTitlePanel">
+              <div class="chapter-heading"><span>04</span><div><p data-i18n="chapterTurnoverKicker">本金不是流水，慢一点比换策略更有效</p><h2 id="turnoverTitlePanel" data-i18n="turnoverTitle">真正决定预计损失的是累计下注额</h2></div></div>
+              <div class="turnover-lab">
+                <div class="turnover-controls">
+                  <label><span data-i18n="stakePerRound">每局下注</span><input id="turnoverStake" type="range" min="1" max="100" value="20"><output id="turnoverStakeValue">20</output></label>
+                  <label><span data-i18n="roundCount">局数</span><input id="turnoverSpins" type="range" min="10" max="500" value="100" step="10"><output id="turnoverSpinsValue">100</output></label>
+                  <label><span data-i18n="wheelType">轮盘类型</span><select id="turnoverWheel"><option value="european" data-i18n="european">欧式单零（37格）</option><option value="american" data-i18n="american">美式双零（38格）</option></select></label>
+                </div>
+                <div class="turnover-result"><div><span data-i18n="totalTurnover">累计流水</span><strong id="turnoverTotal">—</strong></div><div><span data-i18n="expectedLoss">长期预计损失</span><strong id="turnoverLoss">—</strong></div><div><span data-i18n="startingBankroll">初始资金</span><strong id="turnoverBankrollEcho">—</strong></div></div>
+                <div class="turnover-track"><i id="turnoverTrackFill"></i><span data-i18n="turnoverCaption">同一笔筹码被反复赢回、再次下注，就会把100元本金滚成数千元流水。</span></div>
+              </div>
+              <div class="myth-line"><span data-i18n="lowEdgeNotEnough">低赌场优势不代表每小时一定亏得少</span><strong data-i18n="speedMatters">下注速度 × 每局金额同样重要</strong></div>
+            </section>
+
+            <section class="learn-panel" data-learn-panel="comparison" aria-labelledby="comparisonTitlePanel">
+              <div class="chapter-heading"><span>05</span><div><p data-i18n="chapterCompareKicker">把“容易玩”和“损失比例”分开比较</p><h2 id="comparisonTitlePanel" data-i18n="comparisonTitle">每下注100元的长期平均损失</h2></div></div>
+              <div class="comparison-ledger" role="table" aria-label="House edge comparison">
+                <div class="ledger-head" role="row"><span data-i18n="game">项目</span><span data-i18n="conditions">条件</span><span data-i18n="typicalEdge">典型赌场优势</span><span data-i18n="lossPerHundred">每100元预计损失</span></div>
+                <div role="row"><b data-i18n="blackjack">21点</b><span data-i18n="blackjackCondition">良好规则＋严格基本策略</span><em>≈0.5%</em><strong>≈0.50</strong></div>
+                <div role="row"><b data-i18n="baccarat">百家庄</b><span data-i18n="baccaratCondition">只押庄，标准5%佣金</span><em>≈1.06%</em><strong>≈1.06</strong></div>
+                <div role="row"><b data-i18n="frenchRoulette">法式轮盘</b><span>La Partage + 1:1</span><em>≈1.35%</em><strong>≈1.35</strong></div>
+                <div class="roulette-row" role="row"><b data-i18n="europeanRoulette">欧式轮盘</b><span data-i18n="singleZero">单零</span><em>2.70%</em><strong>2.70</strong></div>
+                <div role="row"><b data-i18n="americanRoulette">美式轮盘</b><span data-i18n="doubleZero">双零</span><em>5.26%</em><strong>5.26</strong></div>
+              </div>
+              <p class="source-note" data-i18n="comparisonNote">这些是常见规则下的近似值；具体桌面规则、下注速度和错误决策会改变实际损失。</p>
+            </section>
+
+            <section class="learn-panel" data-learn-panel="responsible" aria-labelledby="responsibleTitlePanel">
+              <div class="chapter-heading"><span>06</span><div><p data-i18n="chapterResponsibleKicker">唯一真正有效的是事前边界</p><h2 id="responsibleTitlePanel" data-i18n="responsibleTitle">限制金额和时间，比寻找必胜法更可靠</h2></div></div>
+              <div class="boundary-sheet">
+                <div class="boundary-copy"><p class="lead" data-i18n="responsibleLead">止损不会改善每一注的赔率，但能阻止一次娱乐会话演变成不可承受的损失。</p><ol><li data-i18n="responsibleOne">只使用可以完全损失的娱乐预算。</li><li data-i18n="responsibleTwo">不要追损，不借钱，不把赌博当作收入来源。</li><li data-i18n="responsibleThree">预先设定停止时间和损失上限。</li></ol></div>
+                <form class="boundary-form" onsubmit="return false"><label><span data-i18n="sessionBudget">本次娱乐预算</span><input id="sessionBudget" type="number" min="1" value="100"></label><label><span data-i18n="sessionLossLimit">停止损失</span><input id="sessionLossLimit" type="number" min="1" value="50"></label><label><span data-i18n="sessionTimeLimit">停止时间（分钟）</span><input id="sessionTimeLimit" type="number" min="5" value="45"></label><div id="boundarySummary" class="boundary-summary">—</div></form>
+              </div>
+              <button class="inline-cta editorial-action" type="button" data-view-target="play" data-i18n="returnToGame">回到模拟器</button>
+            </section>
+
+            <div class="learn-pagination"><button id="learnPrev" type="button" data-i18n="previous">上一步</button><span id="learnProgress">01 / 06</span><button id="learnNext" type="button" data-i18n="next">下一步</button></div>
           </article>
         </div>
       </div>

@@ -1,9 +1,9 @@
 {
   "name": "roulette-education-simulator",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "private": true,
   "type": "module",
-  "description": "Multilingual 3D roulette education simulator with Liquid Glass-inspired navigation, rule lessons, and probability education.",
+  "description": "Multilingual 3D roulette probability lab with contextual learning prompts, strategy experiments, and editorial science pages.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",

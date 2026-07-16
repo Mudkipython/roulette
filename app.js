@@ -193,6 +193,132 @@ Object.assign(translations.fr, {
   returnToGame:'Retour au simulateur'
 });
 
+
+
+Object.assign(translations.zh, {
+  coachLabel:'实时概率提示', coachLearn:'查看原理', chapterIndex:'章节目录',
+  learnPageTitle:'轮盘不是预测题，而是一门负期望实验',
+  learnPageIntro:'从赔率、独立事件、下注系统到破产风险，用可操作的小实验解释为什么“看起来有道理”的策略仍然无法改变长期数学期望。',
+  learnIndexEdge:'赔率与赌场优势', learnIndexFallacy:'连开与独立事件', learnIndexStrategies:'下注策略解剖', learnIndexTurnover:'流水与时间', learnIndexCompare:'项目比较', learnIndexResponsible:'止损与边界',
+  chapterEdgeKicker:'公平赔率与实际赔率之间的一格空隙', edgeSectionTitle:'赌场不需要操纵结果，只需要少赔一点',
+  edgeLead:'欧式轮盘的37个格子若完全等概率，单号的公平净赔率应是36:1；赌场只赔35:1。少掉的那一倍，就是每一元下注上的长期优势。',
+  edgeQuote:'赌场优势不是“每局都会收走2.7%”，而是大量重复下注后，每100元流水平均留下约2.70元。',
+  changesLabel:'它改变了什么', notChangesLabel:'它没有改变什么', edgeChanges:'长期平均回报', edgeNotChanges:'单局仍可能大赢',
+  chapterStreakKicker:'把随机波动误认成趋势，是最常见的错觉', fallacyLead:'每次合规轮盘转动都近似独立。前面出现多少次红，并不会改变下一次红、黑或绿色0的结构性概率。',
+  remember:'记住', independenceNote:'历史结果可以描述过去，不能给下一颗球增加记忆。', streakLabRun:'随机生成20次，看看连开有多常见',
+  chapterStrategyKicker:'策略改变下注路径，不改变轮盘赔率', strategySectionTitle:'六种常见下注系统，逐个拆开看',
+  strategyFlat:'固定下注', strategyMartingale:'马丁格尔', strategyFibonacci:'斐波那契', strategyDalembert:'达朗贝尔', strategyLabouchere:'拉布谢尔', strategyHotCold:'冷热号',
+  baseBet:'基础下注', lossStreak:'连续失利次数', nextBet:'下一注', bankrollRequired:'累计所需资金',
+  strategyQuestionOne:'为什么经常“小赢”？', strategyAnswerOne:'因为多数策略把大量常见的小利润放在前面，把罕见但巨大的亏损推迟到长连败时出现。',
+  strategyQuestionTwo:'为什么回测看起来有效？', strategyAnswerTwo:'如果样本没有覆盖足够长的极端连败，策略的尾部风险就不会显现。',
+  strategyQuestionThree:'能否靠停赢止损修复？', strategyAnswerThree:'它能限制单次会话的损失或时间，但不能把负期望变成正期望。',
+  chapterTurnoverKicker:'本金不是流水，慢一点比换策略更有效', stakePerRound:'每局下注', roundCount:'局数', totalTurnover:'累计流水', expectedLoss:'长期预计损失',
+  turnoverCaption:'同一笔筹码被反复赢回、再次下注，就会把100元本金滚成数千元流水。', lowEdgeNotEnough:'低赌场优势不代表每小时一定亏得少', speedMatters:'下注速度 × 每局金额同样重要',
+  chapterCompareKicker:'把“容易玩”和“损失比例”分开比较', chapterResponsibleKicker:'唯一真正有效的是事前边界',
+  responsibleLead:'止损不会改善每一注的赔率，但能阻止一次娱乐会话演变成不可承受的损失。', sessionBudget:'本次娱乐预算', sessionLossLimit:'停止损失', sessionTimeLimit:'停止时间（分钟）'
+});
+Object.assign(translations.en, {
+  coachLabel:'Live probability note', coachLearn:'See the principle', chapterIndex:'Chapter index',
+  learnPageTitle:'Roulette is not a prediction puzzle. It is a negative-expectation experiment.',
+  learnPageIntro:'Use small interactive experiments to examine payouts, independent events, betting systems, turnover, and ruin risk—and see why plausible systems cannot change long-run expected value.',
+  learnIndexEdge:'Payouts & house edge', learnIndexFallacy:'Streaks & independence', learnIndexStrategies:'Betting systems', learnIndexTurnover:'Turnover & time', learnIndexCompare:'Game comparison', learnIndexResponsible:'Limits & boundaries',
+  chapterEdgeKicker:'The one-pocket gap between fair and paid odds', edgeSectionTitle:'The house does not need to rig outcomes; it only needs to pay slightly less',
+  edgeLead:'With 37 equally likely pockets, the fair net payout for a straight-up European bet would be 36:1. The table pays 35:1. That missing unit creates the long-run edge on every unit wagered.',
+  edgeQuote:'A 2.70% house edge does not mean 2.70% is taken every round. It means that across large wagering turnover, the house keeps about 2.70 per 100 wagered on average.',
+  changesLabel:'What it changes', notChangesLabel:'What it does not change', edgeChanges:'Long-run average return', edgeNotChanges:'A single round can still win big',
+  chapterStreakKicker:'Mistaking random variation for a trend is the most common illusion', fallacyLead:'Each compliant roulette spin is approximately independent. A run of reds does not change the structural probabilities of red, black, or green on the next spin.',
+  remember:'Remember', independenceNote:'History describes the past; it does not give the next ball a memory.', streakLabRun:'Generate 20 spins and see how naturally streaks appear',
+  chapterStrategyKicker:'Systems change the path of bets, not the wheel payouts', strategySectionTitle:'Six common betting systems, taken apart',
+  strategyFlat:'Flat betting', strategyMartingale:'Martingale', strategyFibonacci:'Fibonacci', strategyDalembert:"D’Alembert", strategyLabouchere:'Labouchère', strategyHotCold:'Hot & cold numbers',
+  baseBet:'Base bet', lossStreak:'Consecutive losses', nextBet:'Next bet', bankrollRequired:'Total bankroll required',
+  strategyQuestionOne:'Why do systems often show small wins?', strategyAnswerOne:'Many systems put frequent small profits first while postponing rare, very large losses until a long losing streak.',
+  strategyQuestionTwo:'Why can backtests look convincing?', strategyAnswerTwo:'If the sample never includes a sufficiently extreme losing run, the tail risk remains invisible.',
+  strategyQuestionThree:'Do win and loss limits repair the edge?', strategyAnswerThree:'They can limit one session’s time or loss, but they cannot convert negative expectation into positive expectation.',
+  chapterTurnoverKicker:'Bankroll is not turnover; slowing down often matters more than switching systems', stakePerRound:'Bet per round', roundCount:'Rounds', totalTurnover:'Total turnover', expectedLoss:'Long-run expected loss',
+  turnoverCaption:'The same chips can be returned and wagered again, turning a 100 bankroll into thousands of wagering turnover.', lowEdgeNotEnough:'A low house edge does not guarantee a low hourly loss', speedMatters:'Betting speed × stake per round also matters',
+  chapterCompareKicker:'Compare ease of play separately from loss rate', chapterResponsibleKicker:'The only reliable protection is a boundary set in advance',
+  responsibleLead:'A stop limit does not improve the payout of any bet, but it can keep an entertainment session from becoming an unaffordable loss.', sessionBudget:'Entertainment budget', sessionLossLimit:'Stop-loss amount', sessionTimeLimit:'Stop time (minutes)'
+});
+Object.assign(translations.fr, {
+  coachLabel:'Note de probabilité en direct', coachLearn:'Voir le principe', chapterIndex:'Sommaire',
+  learnPageTitle:'La roulette n’est pas un problème de prédiction, mais une expérience à espérance négative',
+  learnPageIntro:'De petites expériences interactives expliquent les paiements, l’indépendance, les systèmes de mise, le volume joué et le risque de ruine.',
+  learnIndexEdge:'Paiements et avantage', learnIndexFallacy:'Séries et indépendance', learnIndexStrategies:'Systèmes de mise', learnIndexTurnover:'Volume et temps', learnIndexCompare:'Comparaison', learnIndexResponsible:'Limites',
+  chapterEdgeKicker:'L’écart entre la cote juste et la cote payée', edgeSectionTitle:'La maison n’a pas besoin de truquer le résultat; elle paie simplement un peu moins',
+  edgeLead:'Avec 37 cases équiprobables, la cote nette juste d’un numéro plein serait 36:1. La table paie 35:1. Cette unité manquante crée l’avantage à long terme.',
+  edgeQuote:'Un avantage de 2,70 % ne signifie pas une perte de 2,70 % à chaque tour, mais environ 2,70 conservés par la maison pour 100 misés sur un grand volume.',
+  changesLabel:'Ce que cela change', notChangesLabel:'Ce que cela ne change pas', edgeChanges:'Le rendement moyen à long terme', edgeNotChanges:'Un tour peut toujours rapporter gros',
+  chapterStreakKicker:'Confondre variation aléatoire et tendance est l’illusion la plus fréquente', fallacyLead:'Chaque tour conforme est approximativement indépendant. Une série de rouges ne modifie pas les probabilités du tour suivant.',
+  remember:'À retenir', independenceNote:'L’historique décrit le passé; il ne donne aucune mémoire à la prochaine bille.', streakLabRun:'Générer 20 tours et observer la fréquence naturelle des séries',
+  chapterStrategyKicker:'Les systèmes modifient le chemin des mises, pas les cotes', strategySectionTitle:'Six systèmes de mise courants, démontés',
+  strategyFlat:'Mise fixe', strategyMartingale:'Martingale', strategyFibonacci:'Fibonacci', strategyDalembert:"D’Alembert", strategyLabouchere:'Labouchère', strategyHotCold:'Numéros chauds/froids',
+  baseBet:'Mise de base', lossStreak:'Pertes consécutives', nextBet:'Mise suivante', bankrollRequired:'Capital cumulé requis',
+  strategyQuestionOne:'Pourquoi tant de petits gains ?', strategyAnswerOne:'Beaucoup de systèmes placent des gains fréquents au début et repoussent une perte rare mais énorme à une longue série perdante.',
+  strategyQuestionTwo:'Pourquoi les tests historiques semblent-ils fonctionner ?', strategyAnswerTwo:'Si l’échantillon ne contient pas une série de pertes extrême, le risque de queue reste invisible.',
+  strategyQuestionThree:'Les limites gain/perte réparent-elles l’avantage ?', strategyAnswerThree:'Elles limitent une session, mais ne transforment pas une espérance négative en espérance positive.',
+  chapterTurnoverKicker:'Le capital n’est pas le volume; ralentir compte souvent davantage', stakePerRound:'Mise par tour', roundCount:'Tours', totalTurnover:'Volume total', expectedLoss:'Perte prévue à long terme',
+  turnoverCaption:'Les mêmes jetons peuvent être rendus puis rejoués, transformant 100 de capital en milliers de volume.', lowEdgeNotEnough:'Un faible avantage ne garantit pas une faible perte horaire', speedMatters:'Vitesse × mise par tour compte aussi',
+  chapterCompareKicker:'Comparer séparément simplicité et taux de perte', chapterResponsibleKicker:'La seule protection fiable est une limite fixée à l’avance',
+  responsibleLead:'Une limite n’améliore pas les cotes, mais empêche une session de devenir une perte inabordable.', sessionBudget:'Budget de loisir', sessionLossLimit:'Perte maximale', sessionTimeLimit:'Durée maximale (minutes)'
+});
+
+const STRATEGY_COPY = {
+  zh: {
+    flat:{name:'固定下注', verdict:'最透明，但仍是负期望', description:'每局下注相同金额。它不会制造“追回损失”的错觉，因此资金曲线更容易理解；长期平均损失仍等于流水乘赌场优势。', changes:'降低下注额升级带来的尾部风险，波动相对可控。', notChanges:'每一元下注的负数学期望。'},
+    martingale:{name:'马丁格尔', verdict:'高概率小赢，低概率重伤', description:'每输一次把下一注翻倍，赢一次后回到基础下注。一次胜利可以覆盖此前损失并多赢一份基础注，但长连败会让下注额指数增长。', changes:'盈亏分布：更多小赢，少数极大亏损。', notChanges:'红黑中奖概率、赌场优势和长期期望。'},
+    fibonacci:{name:'斐波那契', verdict:'增长较慢，不代表安全', description:'按1、1、2、3、5、8…递增。它比翻倍温和，却仍会在长连败中持续扩大资金暴露，而且一次胜利通常不能立即覆盖全部损失。', changes:'下注增长速度与回本路径。', notChanges:'轮盘结果的独立性和负期望。'},
+    dalembert:{name:'达朗贝尔', verdict:'线性加码，风险只是来得更慢', description:'输一次增加一个基础单位，赢一次减少一个单位。它建立在“输赢会趋向平衡”的直觉上，但短期序列没有义务及时均衡。', changes:'下注额以线性而非指数方式变化。', notChanges:'下一局概率，也不能保证均值回归在资金耗尽前发生。'},
+    labouchere:{name:'拉布谢尔', verdict:'看似有计划，实质仍在追损', description:'先写下一串数字，下注首尾之和；赢则划掉首尾，输则把刚才下注额加到末尾。连败会让清单和下注额一起膨胀。', changes:'用“清单完成”包装资金递进。', notChanges:'每次下注的期望值与尾部破产风险。'},
+    hotcold:{name:'冷热号', verdict:'描述过去，不预测未来', description:'根据近期频率追“热号”或反买“冷号”。热手和赌徒谬误方向相反，却都把随机波动当作可延续或可反转的信号。', changes:'选号方式与故事感。', notChanges:'每个合法号码下一局被抽中的概率。'}
+  },
+  en: {
+    flat:{name:'Flat betting', verdict:'Transparent, but still negative expectation', description:'Wager the same amount every round. The bankroll path is easier to understand because there is no recovery escalation, but expected loss remains turnover multiplied by house edge.', changes:'Removes progression tail risk and keeps variance more legible.', notChanges:'The negative expectation on every unit wagered.'},
+    martingale:{name:'Martingale', verdict:'Frequent small wins, rare severe damage', description:'Double after every loss and reset after a win. One win recovers earlier losses plus one base unit, but a long losing run makes the stake grow exponentially.', changes:'The shape of outcomes: many small wins and a few enormous losses.', notChanges:'Win probability, house edge, or long-run expected value.'},
+    fibonacci:{name:'Fibonacci', verdict:'Slower growth is not safety', description:'Move through 1, 1, 2, 3, 5, 8… after losses. It escalates more gently than doubling, but exposure still grows and one win may not recover the full sequence.', changes:'Escalation speed and the route back toward break-even.', notChanges:'Independence of spins and negative expectation.'},
+    dalembert:{name:"D’Alembert", verdict:'Linear escalation only delays the risk', description:'Add one base unit after a loss and subtract one after a win. It relies on the intuition that wins and losses will soon balance, but short sequences have no duty to rebalance in time.', changes:'Stake size grows linearly rather than exponentially.', notChanges:'Next-spin probability or whether mean reversion arrives before ruin.'},
+    labouchere:{name:'Labouchère', verdict:'A plan-shaped form of loss chasing', description:'Write a number line, bet the sum of its first and last entries, cross them off after a win, and append the lost amount after a loss. Losing runs expand both the list and the stake.', changes:'Packages progression as completion of a cancellation list.', notChanges:'Expected value per wager and tail ruin risk.'},
+    hotcold:{name:'Hot & cold numbers', verdict:'Describes the past, not the next spin', description:'Follow frequent “hot” outcomes or oppose overdue “cold” outcomes. Hot-hand and gambler’s-fallacy stories point in opposite directions but both treat random variation as a signal.', changes:'Selection method and narrative appeal.', notChanges:'The probability that each legal pocket appears next.'}
+  },
+  fr: {
+    flat:{name:'Mise fixe', verdict:'Claire, mais toujours à espérance négative', description:'La même somme est misée à chaque tour. La trajectoire est plus lisible sans escalade, mais la perte prévue reste le volume multiplié par l’avantage.', changes:'Réduit le risque de queue des progressions.', notChanges:'L’espérance négative de chaque unité misée.'},
+    martingale:{name:'Martingale', verdict:'Petits gains fréquents, rare perte sévère', description:'Doubler après chaque perte et revenir à la base après un gain. Un gain récupère la série, mais une longue série perdante fait croître la mise exponentiellement.', changes:'La forme des résultats.', notChanges:'Probabilité, avantage maison et espérance.'},
+    fibonacci:{name:'Fibonacci', verdict:'Une croissance plus lente n’est pas une sécurité', description:'Suivre 1, 1, 2, 3, 5, 8… après les pertes. L’exposition augmente toujours et un gain ne récupère pas nécessairement toute la série.', changes:'La vitesse de progression.', notChanges:'L’indépendance et l’espérance négative.'},
+    dalembert:{name:"D’Alembert", verdict:'La progression linéaire retarde seulement le risque', description:'Ajouter une unité après une perte et en retirer une après un gain. Rien n’oblige une courte série à se rééquilibrer avant l’épuisement du capital.', changes:'Une croissance linéaire de la mise.', notChanges:'La probabilité du prochain tour.'},
+    labouchere:{name:'Labouchère', verdict:'Une poursuite des pertes présentée comme un plan', description:'Miser la somme du premier et du dernier nombre, les rayer après un gain et ajouter la perte à la fin. Les séries perdantes gonflent liste et mise.', changes:'La forme de la progression.', notChanges:'L’espérance par mise et le risque de ruine.'},
+    hotcold:{name:'Numéros chauds/froids', verdict:'Décrit le passé, pas le prochain tour', description:'Suivre les résultats fréquents ou contrer ceux jugés en retard. Les deux récits donnent à la variation aléatoire un pouvoir prédictif absent.', changes:'La méthode de sélection.', notChanges:'La probabilité de chaque case au prochain tour.'}
+  }
+};
+
+const COACH_COPY = {
+  zh: {
+    due:{title:'黑色并没有“该出了”', body:'连续出现同色不会改变下一局概率。你正在用赌徒谬误解释一个独立事件。', topic:'streaks'},
+    hot:{title:'连红也不代表红色正在变热', body:'追随同色连开属于热手错觉。历史序列不会提高下一颗球重复同色的概率。', topic:'streaks'},
+    martingale:{title:'你正在放大追损下注', body:'输后大幅提高下注额会把许多小结果换成一次可能很大的亏损，但不会改变赌场优势。', topic:'strategies'},
+    hedge:{title:'同时押红黑不是无风险覆盖', body:'0（以及美式轮盘的00）仍会让两边一起输，而且资金被占用后长期期望仍为负。', topic:'edge'},
+    turnover:{title:'你的累计流水已经超过初始资金数倍', body:'长期预计损失由流水而不是最初带入金额决定。降低局速和单注更直接。', topic:'turnover'},
+    variance:{title:'短期赢钱不等于找到了规律', body:'负期望游戏仍会自然产生赢家。需要比较大量重复结果与理论期望，而不是只看几局。', topic:'turnover'},
+    doublezero:{title:'双零把赌场优势几乎翻倍', body:'美式轮盘的0与00都击败常见1:1下注，典型赌场优势从2.70%升到5.26%。', topic:'edge'}
+  },
+  en: {
+    due:{title:'Black is not “due”', body:'A same-colour streak does not change the next-spin probability. This is the gambler’s fallacy applied to an independent event.', topic:'streaks'},
+    hot:{title:'A red streak does not make red hotter', body:'Following a colour streak is a hot-hand story. History does not increase the probability of another same-colour result.', topic:'streaks'},
+    martingale:{title:'Your loss-chasing stake is escalating', body:'A large increase after a loss trades many small outcomes for a possible severe loss without changing the house edge.', topic:'strategies'},
+    hedge:{title:'Betting both red and black is not risk-free coverage', body:'0—and 00 on an American wheel—still defeats both sides, while the combined wager retains negative expectation.', topic:'edge'},
+    turnover:{title:'Turnover now exceeds your starting bankroll several times', body:'Expected loss is driven by total wagering turnover. Slower rounds and smaller stakes are more direct controls.', topic:'turnover'},
+    variance:{title:'A short-term win is not evidence of a system', body:'Negative-expectation games naturally produce winners. Compare many repetitions with theoretical expectation, not a few rounds.', topic:'turnover'},
+    doublezero:{title:'Double zero nearly doubles the house edge', body:'Both 0 and 00 defeat standard even-money bets, raising the typical edge from 2.70% to 5.26%.', topic:'edge'}
+  },
+  fr: {
+    due:{title:'Le noir n’est pas « dû »', body:'Une série de même couleur ne change pas la probabilité suivante. C’est l’erreur du joueur appliquée à un événement indépendant.', topic:'streaks'},
+    hot:{title:'Une série rouge ne rend pas le rouge plus chaud', body:'Suivre une série est une illusion de main chaude. L’historique n’augmente pas la chance de répétition.', topic:'streaks'},
+    martingale:{title:'La mise de poursuite augmente', body:'Augmenter fortement après une perte échange de petits résultats contre une perte potentiellement sévère sans changer l’avantage.', topic:'strategies'},
+    hedge:{title:'Miser rouge et noir n’est pas une couverture sans risque', body:'Le 0—et le 00 en américaine—fait perdre les deux côtés et l’espérance reste négative.', topic:'edge'},
+    turnover:{title:'Le volume joué dépasse plusieurs fois le capital initial', body:'La perte prévue dépend du volume total. Ralentir et réduire la mise sont les contrôles les plus directs.', topic:'turnover'},
+    variance:{title:'Un gain court ne prouve aucun système', body:'Un jeu à espérance négative produit naturellement des gagnants. Il faut comparer de nombreuses répétitions à la théorie.', topic:'turnover'},
+    doublezero:{title:'Le double zéro double presque l’avantage', body:'0 et 00 battent les mises simples, faisant passer l’avantage typique de 2,70 % à 5,26 %.', topic:'edge'}
+  }
+};
+
 const els = Object.fromEntries([...document.querySelectorAll('[id]')].map(element => [element.id, element]));
 const wheelCtx = els.wheelCanvas.getContext('2d');
 const chartCtx = els.profitChart.getContext('2d');
@@ -210,6 +336,9 @@ let lastBets = [];
 let state = freshState();
 let rouletteScene = null;
 let wheelRotation = 0;
+let activeLearnTopic = 'edge';
+let activeStrategy = 'flat';
+let coachState = { kind: null, topic: 'streaks', hidden: true, lastShownSpin: -99 };
 
 function freshState() {
   const starting = Math.max(1, Number(els.startingBankroll?.value || 1000));
@@ -285,6 +414,10 @@ function applyLanguage() {
   drawChart();
   updatePauseButton();
   updateRoundPhase(roundPhase);
+  renderStrategyLab();
+  updateTurnoverLab();
+  updateBoundarySummary();
+  refreshCoachLanguage();
   localStorage.setItem('rouletteLabLanguage', lang);
 }
 
@@ -386,6 +519,7 @@ function placeBet(type, selected = '') {
   setStatus('');
   renderBetSlip();
   buildBetBoard();
+  maybeCoachForBet(type);
 }
 
 function undoBet() {
@@ -619,6 +753,7 @@ async function playAutomaticRound() {
   const settlement = settleRound(result, lockedBets);
   if (lockedBets.length) lastBets = cloneBets(lockedBets);
   updateAll(result, settlement);
+  maybeCoachAfterRound(settlement);
   updateRoundPhase('resolved');
   if (rouletteScene?.ready) await rouletteScene.resolveResult(settlement.net, result);
 
@@ -703,6 +838,8 @@ function runBatch() {
 function resetSimulation(showMessage = true) {
   if (roundInProgress) return setStatus(t('resetWait'));
   autoEnabled = false;
+  hideCoach();
+  coachState = { kind: null, topic: 'streaks', hidden: true, lastShownSpin: -99 };
   state = freshState();
   currentBets.clear();
   betActionStack = [];
@@ -921,6 +1058,223 @@ function shortestAngle(from, to) {
 }
 
 
+
+
+const LEARN_TOPICS = ['edge', 'streaks', 'strategies', 'turnover', 'comparison', 'responsible'];
+
+function setLearnTopic(topic, { updateHash = true, focus = false } = {}) {
+  activeLearnTopic = LEARN_TOPICS.includes(topic) ? topic : 'edge';
+  document.querySelectorAll('[data-learn-panel]').forEach(panel => panel.classList.toggle('is-active', panel.dataset.learnPanel === activeLearnTopic));
+  document.querySelectorAll('[data-learn-target]').forEach(button => {
+    if (button.dataset.learnTarget === activeLearnTopic) button.setAttribute('aria-current', 'true');
+    else button.removeAttribute('aria-current');
+  });
+  const index = LEARN_TOPICS.indexOf(activeLearnTopic);
+  if (els.learnProgress) els.learnProgress.textContent = `${String(index + 1).padStart(2, '0')} / ${String(LEARN_TOPICS.length).padStart(2, '0')}`;
+  if (els.learnPrev) els.learnPrev.disabled = index <= 0;
+  if (els.learnNext) els.learnNext.disabled = index >= LEARN_TOPICS.length - 1;
+  if (updateHash && document.body.dataset.view === 'learn') history.replaceState(null, '', `#learn/${activeLearnTopic}`);
+  const activeButton = document.querySelector(`[data-learn-target="${activeLearnTopic}"]`);
+  if (focus) {
+    const learnView = document.querySelector('.app-view[data-view="learn"]');
+    const workbench = document.querySelector('.learn-workbench');
+    if (learnView && workbench) {
+      const relativeTop = learnView.scrollTop + workbench.getBoundingClientRect().top - learnView.getBoundingClientRect().top;
+      learnView.scrollTo({ top: Math.max(0, relativeTop - 14), behavior: 'auto' });
+    }
+    if (window.innerWidth <= 980 && activeButton?.parentElement) {
+      const rail = activeButton.parentElement;
+      rail.scrollTo({ left: Math.max(0, activeButton.offsetLeft - (rail.clientWidth - activeButton.clientWidth) / 2), behavior: 'auto' });
+    }
+  }
+}
+
+function routeFromHash() {
+  const raw = location.hash.slice(1);
+  const [viewPart, topicPart] = raw.split('/');
+  const view = validViews.has(viewPart) ? viewPart : 'play';
+  setAppView(view, { updateHash: false });
+  if (view === 'learn') setLearnTopic(topicPart || activeLearnTopic, { updateHash: false });
+}
+
+function strategySequence(type, base, losses) {
+  const bets = [];
+  if (type === 'martingale') {
+    for (let i = 0; i < losses; i += 1) bets.push(base * 2 ** i);
+    return { bets, next: base * 2 ** losses };
+  }
+  if (type === 'fibonacci') {
+    const fib = [1, 1];
+    while (fib.length <= losses) fib.push(fib.at(-1) + fib.at(-2));
+    for (let i = 0; i < losses; i += 1) bets.push(base * fib[i]);
+    return { bets, next: base * fib[losses] };
+  }
+  if (type === 'dalembert') {
+    for (let i = 0; i < losses; i += 1) bets.push(base * (i + 1));
+    return { bets, next: base * (losses + 1) };
+  }
+  if (type === 'labouchere') {
+    const line = [1, 2, 3, 4];
+    for (let i = 0; i < losses; i += 1) {
+      const units = line.length > 1 ? line[0] + line.at(-1) : line[0];
+      bets.push(base * units);
+      line.push(units);
+    }
+    const nextUnits = line.length > 1 ? line[0] + line.at(-1) : line[0];
+    return { bets, next: base * nextUnits };
+  }
+  for (let i = 0; i < losses; i += 1) bets.push(base);
+  return { bets, next: base };
+}
+
+function renderStrategyLab() {
+  if (!els.strategyName) return;
+  const copy = STRATEGY_COPY[lang]?.[activeStrategy] || STRATEGY_COPY.en.flat;
+  const base = Number(els.strategyBaseBet?.value || 10);
+  const losses = Number(els.strategyLosses?.value || 6);
+  const { bets, next } = strategySequence(activeStrategy, base, losses);
+  els.strategyVerdict.textContent = copy.verdict;
+  els.strategyName.textContent = copy.name;
+  els.strategyDescription.textContent = copy.description;
+  els.strategyChanges.textContent = copy.changes;
+  els.strategyDoesNotChange.textContent = copy.notChanges;
+  els.strategyBaseBetValue.textContent = formatMoney(base);
+  els.strategyLossesValue.textContent = formatNumber(losses);
+  els.strategyNextBet.textContent = formatMoney(next);
+  els.strategyBankroll.textContent = formatMoney(bets.reduce((sum, value) => sum + value, 0) + next);
+  els.strategySequence.innerHTML = '';
+  const max = Math.max(...bets, next, 1);
+  bets.forEach((value, index) => {
+    const bar = document.createElement('i');
+    bar.style.setProperty('--h', `${Math.max(18, (value / max) * 120)}px`);
+    bar.textContent = value > 999 ? `${Math.round(value / 1000)}k` : String(Math.round(value));
+    bar.title = `${index + 1}: ${formatMoney(value)}`;
+    els.strategySequence.append(bar);
+  });
+  document.querySelectorAll('[data-strategy]').forEach(button => button.setAttribute('aria-selected', String(button.dataset.strategy === activeStrategy)));
+}
+
+function runStreakLab() {
+  if (!els.streakLabResults) return;
+  const results = Array.from({ length: 20 }, () => randomResult());
+  els.streakLabResults.innerHTML = '';
+  let longest = 0;
+  let current = 0;
+  let last = null;
+  let longestColor = 'red';
+  results.forEach(result => {
+    const color = colorOf(result);
+    const dot = document.createElement('i');
+    dot.className = color;
+    dot.title = result;
+    els.streakLabResults.append(dot);
+    if (color === 'green') { current = 0; last = null; return; }
+    current = color === last ? current + 1 : 1;
+    last = color;
+    if (current > longest) { longest = current; longestColor = color; }
+  });
+  const label = lang === 'zh'
+    ? `这20次里最长连续同色为 ${longest} 次（${longestColor === 'red' ? '红' : '黑'}）。出现连开并不表示下一次概率改变。`
+    : lang === 'fr'
+      ? `La plus longue série dans ces 20 tours est de ${longest} (${longestColor === 'red' ? 'rouge' : 'noir'}). Une série ne modifie pas le tour suivant.`
+      : `The longest same-colour run in these 20 spins is ${longest} (${longestColor}). A streak does not change the next spin.`;
+  const note = document.createElement('p');
+  note.textContent = label;
+  els.streakLabResults.append(note);
+}
+
+function updateTurnoverLab() {
+  if (!els.turnoverStake) return;
+  const stake = Number(els.turnoverStake.value || 20);
+  const spins = Number(els.turnoverSpins.value || 100);
+  const edge = els.turnoverWheel.value === 'american' ? 2 / 38 : 1 / 37;
+  const total = stake * spins;
+  const loss = total * edge;
+  const bankroll = Math.max(1, Number(els.startingBankroll?.value || 1000));
+  els.turnoverStakeValue.textContent = formatMoney(stake);
+  els.turnoverSpinsValue.textContent = formatNumber(spins);
+  els.turnoverTotal.textContent = formatMoney(total);
+  els.turnoverLoss.textContent = formatMoney(loss);
+  els.turnoverBankrollEcho.textContent = formatMoney(bankroll);
+  els.turnoverTrackFill.style.setProperty('--w', `${Math.min(100, Math.max(4, (total / bankroll) * 10))}%`);
+}
+
+function updateBoundarySummary() {
+  if (!els.boundarySummary) return;
+  const budget = Math.max(1, Number(els.sessionBudget?.value || 100));
+  const loss = Math.min(budget, Math.max(1, Number(els.sessionLossLimit?.value || 50)));
+  const minutes = Math.max(5, Number(els.sessionTimeLimit?.value || 45));
+  els.sessionLossLimit.max = String(budget);
+  const text = lang === 'zh'
+    ? `计划：最多使用 ${formatMoney(budget)}，净亏达到 ${formatMoney(loss)} 或经过 ${minutes} 分钟即停止。`
+    : lang === 'fr'
+      ? `Plan : budget maximal ${formatMoney(budget)}; arrêt après ${formatMoney(loss)} de perte nette ou ${minutes} minutes.`
+      : `Plan: use at most ${formatMoney(budget)} and stop after a ${formatMoney(loss)} net loss or ${minutes} minutes.`;
+  els.boundarySummary.textContent = text;
+}
+
+function consecutiveColourStreak() {
+  let color = null;
+  let count = 0;
+  for (const item of state.history) {
+    const next = colorOf(item.result);
+    if (next === 'green') break;
+    if (color === null) color = next;
+    if (next !== color) break;
+    count += 1;
+  }
+  return { color, count };
+}
+
+function showCoach(kind, { force = false } = {}) {
+  const copy = COACH_COPY[lang]?.[kind];
+  if (!copy || !els.behaviorCoach) return;
+  if (!force && coachState.kind === kind && state.spins - coachState.lastShownSpin < 3) return;
+  coachState = { kind, topic: copy.topic, hidden: false, lastShownSpin: state.spins };
+  els.coachTitle.textContent = copy.title;
+  els.coachBody.textContent = copy.body;
+  els.behaviorCoach.hidden = false;
+}
+
+function hideCoach() {
+  if (!els.behaviorCoach) return;
+  coachState.hidden = true;
+  els.behaviorCoach.hidden = true;
+}
+
+function refreshCoachLanguage() {
+  if (coachState.hidden || !coachState.kind) return;
+  const copy = COACH_COPY[lang]?.[coachState.kind];
+  if (!copy) return;
+  els.coachTitle.textContent = copy.title;
+  els.coachBody.textContent = copy.body;
+}
+
+function maybeCoachForBet(type) {
+  const streak = consecutiveColourStreak();
+  if (streak.count >= 3 && (type === 'red' || type === 'black')) {
+    showCoach(type === streak.color ? 'hot' : 'due');
+    return;
+  }
+  const previous = state.history[0];
+  if (previous?.net < 0 && currentBetTotal() >= Math.max(selectedChip * 2, previous.stake * 1.8)) {
+    showCoach('martingale');
+    return;
+  }
+  if (currentBets.has(betKey('red')) && currentBets.has(betKey('black'))) {
+    showCoach('hedge');
+  }
+}
+
+function maybeCoachAfterRound(settlement) {
+  const streak = consecutiveColourStreak();
+  if (streak.count >= 4) showCoach('hot');
+  else if (els.wheelType.value === 'american' && state.spins <= 2) showCoach('doublezero');
+  else if (state.wagered >= state.startingBankroll * 4 && state.spins % 4 === 0) showCoach('turnover');
+  else if (settlement.net > 0 && state.spins <= 5) showCoach('variance');
+}
+
+
 const validViews = new Set(['play', 'rules', 'learn']);
 let activeTutorialStep = 0;
 
@@ -951,7 +1305,8 @@ function setAppView(name, { updateHash = true } = {}) {
   document.body.dataset.view = view;
   document.querySelectorAll('.app-view').forEach(section => section.classList.toggle('is-active', section.dataset.view === view));
   document.querySelectorAll('.top-tabs [data-view-target], .bottom-tabs [data-view-target]').forEach(button => button.setAttribute('aria-selected', String(button.dataset.viewTarget === view)));
-  if (updateHash && location.hash !== `#${view}`) history.replaceState(null, '', `#${view}`);
+  const routeHash = view === 'learn' ? `#learn/${activeLearnTopic}` : `#${view}`;
+  if (updateHash && location.hash !== routeHash) history.replaceState(null, '', routeHash);
   const active = document.querySelector(`.app-view[data-view="${view}"]`);
   if (active) active.scrollTop = 0;
 
@@ -969,7 +1324,19 @@ document.querySelectorAll('[data-inspector-target]').forEach(button => button.ad
 document.querySelectorAll('[data-tutorial-target]').forEach(button => button.addEventListener('click', () => setTutorialStep(button.dataset.tutorialTarget)));
 els.lessonPrev?.addEventListener('click', () => setTutorialStep(activeTutorialStep - 1));
 els.lessonNext?.addEventListener('click', () => setTutorialStep(activeTutorialStep + 1));
-window.addEventListener('hashchange', () => setAppView(location.hash.slice(1), { updateHash: false }));
+window.addEventListener('hashchange', routeFromHash);
+
+document.querySelectorAll('[data-learn-target]').forEach(button => button.addEventListener('click', () => setLearnTopic(button.dataset.learnTarget, { focus: true })));
+document.querySelectorAll('[data-strategy]').forEach(button => button.addEventListener('click', () => { activeStrategy = button.dataset.strategy; renderStrategyLab(); }));
+els.learnPrev?.addEventListener('click', () => setLearnTopic(LEARN_TOPICS[Math.max(0, LEARN_TOPICS.indexOf(activeLearnTopic) - 1)], { focus: true }));
+els.learnNext?.addEventListener('click', () => setLearnTopic(LEARN_TOPICS[Math.min(LEARN_TOPICS.length - 1, LEARN_TOPICS.indexOf(activeLearnTopic) + 1)], { focus: true }));
+els.strategyBaseBet?.addEventListener('input', renderStrategyLab);
+els.strategyLosses?.addEventListener('input', renderStrategyLab);
+els.streakLabRun?.addEventListener('click', runStreakLab);
+[els.turnoverStake, els.turnoverSpins, els.turnoverWheel].forEach(control => control?.addEventListener('input', updateTurnoverLab));
+[els.sessionBudget, els.sessionLossLimit, els.sessionTimeLimit].forEach(control => control?.addEventListener('input', updateBoundarySummary));
+els.coachDismissButton?.addEventListener('click', hideCoach);
+els.coachLearnButton?.addEventListener('click', () => { setAppView('learn'); setLearnTopic(coachState.topic || 'streaks', { focus: true }); });
 
 els.languageSelect.value = lang;
 els.languageSelect.addEventListener('change', event => { lang = event.target.value; applyLanguage(); });
@@ -1004,6 +1371,7 @@ els.wheelType.addEventListener('change', () => {
   renderBetSlip();
   drawWheel();
   updateMetrics();
+  if (els.wheelType.value === 'american') showCoach('doublezero', { force: true });
 });
 
 window.addEventListener('resize', () => { drawWheel(); drawChart(); });
@@ -1021,7 +1389,11 @@ setTutorialStep(0);
 updateRoundPhase('idle');
 updateAll();
 ensureAutoLoop();
-setAppView(location.hash.slice(1) || 'play', { updateHash: false });
+setLearnTopic(activeLearnTopic, { updateHash: false });
+renderStrategyLab();
+updateTurnoverLab();
+updateBoundarySummary();
+routeFromHash();
 
 window.__rouletteLab = {
   getState: () => structuredClone(state),
