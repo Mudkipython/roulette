@@ -39,10 +39,10 @@
       </label>
       <label class="language-control compact-select">
         <span class="sr-only">Language</span>
-        <select id="languageSelect" aria-label="Language">
-          <option value="zh">中文</option>
-          <option value="en">English</option>
-          <option value="fr">Français</option>
+        <select id="languageSelect" aria-label="Language / 语言 / Langue">
+          <option value="zh">🇨🇳 中文</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="fr">🇫🇷 Français</option>
         </select>
       </label>
     </div>
@@ -322,6 +322,14 @@
             </div>
           </div>
         </div>
+
+        <aside class="physics-disclosure" aria-labelledby="physicsDisclosureTitle">
+          <div class="physics-disclosure-mark" aria-hidden="true">φ</div>
+          <div>
+            <h2 id="physicsDisclosureTitle" data-i18n="physicsDisclosureTitle">这次的球不是预设轨迹</h2>
+            <p data-i18n="physicsDisclosure">外轨与斜面阶段依据轮盘动力学方程，以每秒240步进行数值积分；挡板和号码隔片使用连续检测、碰撞冲量、摩擦与恢复系数计算。最终号码由球相对旋转转盘的实际稳定位置决定，不会预先抽号或强制对准。WebGL 不可用时才切换为2D均匀随机回退。</p>
+          </div>
+        </aside>
 
         <section class="reference-section" aria-labelledby="payoutHeading">
           <div class="reference-header">

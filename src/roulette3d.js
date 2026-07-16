@@ -2,13 +2,10 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { RoulettePhysics, ROULETTE_PHYSICS_CONSTANTS } from './roulettePhysics.js';
 
 const TAU = Math.PI * 2;
-const BALL_RADIUS = 0.18;
-const OUTER_TRACK_RADIUS = 6.02;
-const POCKET_RADIUS = 4.47;
-const OUTER_TRACK_Y = 1.34;
-const POCKET_BALL_Y = 0.74;
+const { MACHINE_Y, BALL_RADIUS, OUTER_TRACK_RADIUS, POCKET_RADIUS, OUTER_TRACK_Y, POCKET_BALL_Y } = ROULETTE_PHYSICS_CONSTANTS;
 const RED_NUMBERS = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
 
 function clamp01(value) { return Math.min(1, Math.max(0, value)); }
@@ -91,14 +88,9 @@ export class RouletteScene {
     this.disposed = false;
     this.spinning = false;
     this.phase = 'idle';
-    this.rotorAngle = 0;
-    this.wheelOmega = 0;
-    this.ballAngle = 0.15;
-    this.ballAngularVelocity = 0;
-    this.ballRadius = OUTER_TRACK_RADIUS;
-    this.ballHeight = OUTER_TRACK_Y;
     this.spinState = null;
-    this.lastCountdown = null;
+    this.physics = null;
+    this.lastPhysicsSnapshot = null;
     this.pointer = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
     this.hoveredPocket = null;
@@ -106,7 +98,7 @@ export class RouletteScene {
     this.pulses = [];
   }
 
-  init() {
+  async init() {
     try {
       this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
@@ -134,6 +126,8 @@ export class RouletteScene {
       this.buildBall();
       this.buildPostProcessing();
       this.bindPointerInteraction();
+      this.physics = await RoulettePhysics.create(this.order);
+      this.syncPhysicsSnapshot(this.physics.snapshot());
 
       this.resizeObserver = new ResizeObserver(() => this.resize());
       this.resizeObserver.observe(this.container);
@@ -532,186 +526,100 @@ export class RouletteScene {
       this.machineRoot.remove(this.ballGlow);
     }
     this.order = [...order];
-    this.rotorAngle = 0;
-    this.ballAngle = 0.15;
-    this.ballRadius = OUTER_TRACK_RADIUS;
-    this.ballHeight = OUTER_TRACK_Y;
     this.buildMachine();
-    // buildMachine replaces machineRoot, so reattach the existing ball if present.
     if (this.ball) {
       this.machineRoot.add(this.ball);
       this.machineRoot.add(this.ballGlow);
-      this.updateBallTransform();
     }
+    this.physics?.setOrder(this.order);
+    if (this.physics) this.syncPhysicsSnapshot(this.physics.snapshot());
   }
 
   setSound(enabled) { this.audio.setEnabled(enabled); }
 
-  spinTo(result, hooks = {}) {
-    if (!this.ready || this.spinning) return Promise.resolve();
-    const index = this.order.indexOf(String(result));
-    if (index < 0) return Promise.resolve();
-
+  spin(hooks = {}) {
+    if (!this.ready || this.spinning || !this.physics) return Promise.resolve(null);
     this.clearEffects();
     this.audio.launch();
     this.spinning = true;
     this.container.classList.add('is-spinning');
-    this.container.classList.remove('is-win', 'is-loss');
-
-    const now = performance.now();
-    const bettingDuration = this.reducedMotion ? 4200 : 9000;
-    const descentDuration = this.reducedMotion ? 2300 : 4800;
-    const captureDuration = this.reducedMotion ? 1200 : 2500;
-
-    this.rotorAngle = normalizeAngle(this.rotorAngle);
-    this.wheelOmega = this.reducedMotion ? 0.72 : 0.92; // CCW from above
-    this.ballAngle = 0.15;
-    this.ballAngularVelocity = this.reducedMotion ? 4.7 : 6.4; // clockwise in fixed view
-    this.ballRadius = 6.24;
-    this.ballHeight = OUTER_TRACK_Y + 0.02;
-    this.lastCountdown = null;
-
+    this.container.classList.remove('is-win', 'is-loss', 'is-push');
+    this.physics.launch();
+    const initial = this.physics.snapshot();
+    this.syncPhysicsSnapshot(initial);
     this.spinState = {
-      result: String(result),
-      index,
       hooks,
-      startTime: now,
-      lastTime: now,
-      bettingDuration,
-      descentDuration,
-      captureDuration,
-      betCloseAt: now + bettingDuration,
-      captureAt: now + bettingDuration + descentDuration,
-      endAt: now + bettingDuration + descentDuration + captureDuration,
+      resolve: null,
+      lastCountdown: null,
       betsClosed: false,
-      captureStarted: false,
-      captureStartRadius: null,
-      captureStartRelative: null,
-      captureDelta: null,
-      collisionThresholds: [0.30, 0.52, 0.73],
-      collisionIndex: 0,
-      bounceHeight: 0,
-      bounceVelocity: 0,
-      resolve: null
+      lastMode: initial.mode,
+      lastPhase: initial.phase
     };
-
-    this.setPhase('betting-open', { seconds: Math.ceil(bettingDuration / 1000) });
+    this.setPhase('betting-open', { seconds: initial.countdown });
     return new Promise(resolve => { this.spinState.resolve = resolve; });
   }
 
-  updateSpin(now) {
+  // Backward-compatible alias. The result is now determined by the simulated
+  // motion instead of being supplied by the caller.
+  spinTo(_ignoredResult, hooks = {}) { return this.spin(hooks); }
+
+  updatePhysicalSpin(dt) {
+    const state = this.spinState;
+    if (!state || !this.physics) return;
+    const snapshot = this.physics.step(dt);
+    this.syncPhysicsSnapshot(snapshot);
+
+    if (!snapshot.betsClosed && snapshot.countdown !== state.lastCountdown) {
+      state.lastCountdown = snapshot.countdown;
+      this.emit('roulette-countdown', { seconds: snapshot.countdown });
+    }
+
+    if (snapshot.betsClosed && !state.betsClosed) {
+      state.betsClosed = true;
+      this.setPhase('bets-closed');
+      this.emit('roulette-bets-closed', { resultPending: true });
+    }
+
+    if (snapshot.phase !== state.lastPhase) {
+      state.lastPhase = snapshot.phase;
+      if (snapshot.phase === 'descending') this.setPhase('descending');
+      if (snapshot.phase === 'settling') {
+        this.audio.deflector();
+        this.setPhase('settling');
+      }
+    }
+
+    const velocity = snapshot.ballVelocity;
+    const speed = Math.hypot(velocity.x, velocity.y, velocity.z);
+    if (speed > 0.25) this.audio.rolling(Math.min(8, speed * 0.45));
+
+    if (snapshot.phase === 'resolved' && snapshot.result != null) {
+      this.finishPhysicalSpin(snapshot.result);
+    }
+  }
+
+  finishPhysicalSpin(result) {
     const state = this.spinState;
     if (!state) return;
-    const dt = Math.min(0.033, Math.max(0, (now - state.lastTime) / 1000));
-    state.lastTime = now;
-
-    this.wheelOmega *= Math.exp(-0.010 * dt);
-    this.rotorAngle += this.wheelOmega * dt;
-    this.rotorGroup.rotation.y = this.rotorAngle;
-
-    if (now < state.betCloseAt) {
-      this.updateOuterTrack(now, dt, state);
-    } else if (now < state.captureAt) {
-      if (!state.betsClosed) {
-        state.betsClosed = true;
-        this.setPhase('bets-closed');
-        this.emit('roulette-bets-closed', { resultPending: true });
-      }
-      this.updateDescent(now, dt, state);
-    } else if (now < state.endAt) {
-      if (!state.captureStarted) this.beginCapture(state);
-      this.updateCapture(now, state);
-    } else {
-      this.finishSpin(state);
-    }
-
-    this.updateBallTransform();
-  }
-
-  updateOuterTrack(now, dt, state) {
-    const elapsed = now - state.startTime;
-    const launchProgress = clamp01(elapsed / (this.reducedMotion ? 420 : 720));
-    const targetSpeed = this.reducedMotion ? 5.0 : 6.65;
-    this.ballAngularVelocity += (targetSpeed - this.ballAngularVelocity) * clamp01(dt * 3.4);
-    this.ballAngularVelocity *= Math.exp(-0.010 * dt);
-    this.ballAngle += this.ballAngularVelocity * dt;
-    this.ballRadius = lerp(6.24, OUTER_TRACK_RADIUS, easeOutCubic(launchProgress));
-    this.ballHeight = OUTER_TRACK_Y + Math.sin(elapsed * 0.015) * 0.004;
-
-    const remaining = Math.max(0, Math.ceil((state.betCloseAt - now) / 1000));
-    if (remaining !== this.lastCountdown) {
-      this.lastCountdown = remaining;
-      this.emit('roulette-countdown', { seconds: remaining });
-    }
-    this.audio.rolling(Math.abs(this.ballAngularVelocity));
-  }
-
-  updateDescent(now, dt, state) {
-    const progress = clamp01((now - state.betCloseAt) / state.descentDuration);
-    this.setPhase('descending', { progress });
-
-    this.ballAngularVelocity *= Math.exp(-0.26 * dt);
-    this.ballAngle += this.ballAngularVelocity * dt;
-
-    const radiusCurve = smoothstep(progress);
-    this.ballRadius = lerp(OUTER_TRACK_RADIUS, POCKET_RADIUS + 0.34, radiusCurve);
-
-    while (state.collisionIndex < state.collisionThresholds.length && progress >= state.collisionThresholds[state.collisionIndex]) {
-      const direction = state.collisionIndex % 2 === 0 ? -1 : 1;
-      this.ballAngle += direction * (0.035 + state.collisionIndex * 0.008);
-      state.bounceVelocity = 0.72 - state.collisionIndex * 0.10;
-      this.audio.deflector();
-      state.collisionIndex += 1;
-    }
-
-    state.bounceVelocity -= 4.8 * dt;
-    state.bounceHeight += state.bounceVelocity * dt;
-    if (state.bounceHeight < 0) {
-      state.bounceHeight = 0;
-      state.bounceVelocity = Math.abs(state.bounceVelocity) > 0.24 ? -state.bounceVelocity * 0.16 : 0;
-    }
-
-    this.ballHeight = this.surfaceHeight(this.ballRadius) + BALL_RADIUS + state.bounceHeight;
-    this.audio.rolling(Math.max(0.6, Math.abs(this.ballAngularVelocity) * 0.7));
-  }
-
-  beginCapture(state) {
-    state.captureStarted = true;
-    state.captureStartRadius = this.ballRadius;
-    state.captureStartRelative = normalizeAngle(this.ballAngle + this.rotorAngle);
-    const targetRelative = this.baseAngle(state.index);
-    state.captureDelta = shortestAngle(state.captureStartRelative, targetRelative);
     this.audio.pocket();
-    this.setPhase('settling');
-  }
-
-  updateCapture(now, state) {
-    const progress = clamp01((now - state.captureAt) / state.captureDuration);
-    const eased = easeOutCubic(progress);
-    const arc = TAU / this.order.length;
-    const rattle = Math.sin(progress * Math.PI * 8) * (1 - progress) * arc * 0.20;
-    const relative = state.captureStartRelative + state.captureDelta * eased + rattle;
-
-    this.ballAngle = relative - this.rotorAngle;
-    this.ballRadius = lerp(state.captureStartRadius, POCKET_RADIUS, smoothstep(progress));
-    this.ballHeight = POCKET_BALL_Y + Math.abs(Math.sin(progress * Math.PI * 7)) * (1 - progress) * 0.10;
-  }
-
-  finishSpin(state) {
-    const targetRelative = this.baseAngle(state.index);
-    this.ballAngle = targetRelative - this.rotorAngle;
-    this.ballRadius = POCKET_RADIUS;
-    this.ballHeight = POCKET_BALL_Y;
-    this.updateBallTransform();
-
     const resolve = state.resolve;
     this.spinState = null;
     this.spinning = false;
-    this.wheelOmega = 0;
-    this.ballAngularVelocity = 0;
     this.container.classList.remove('is-spinning');
-    this.setPhase('resolved', { result: state.result });
-    if (resolve) resolve();
+    this.setPhase('resolved', { result });
+    if (resolve) resolve(String(result));
+  }
+
+  syncPhysicsSnapshot(snapshot) {
+    if (!snapshot || !this.ball || !this.rotorGroup) return;
+    this.lastPhysicsSnapshot = snapshot;
+    const p = snapshot.ballPosition;
+    const q = snapshot.ballRotation;
+    const rq = snapshot.rotorRotation;
+    this.ball.position.set(p.x, p.y - MACHINE_Y, p.z);
+    this.ball.quaternion.set(q.x, q.y, q.z, q.w);
+    this.ballGlow.position.copy(this.ball.position);
+    this.rotorGroup.quaternion.set(rq.x, rq.y, rq.z, rq.w);
   }
 
   resolveResult(net, result) {
@@ -745,13 +653,9 @@ export class RouletteScene {
   }
 
   setResult(result) {
-    if (!this.ready) return;
-    const index = this.order.indexOf(String(result));
-    if (index < 0) return;
-    this.ballAngle = this.baseAngle(index) - this.rotorAngle;
-    this.ballRadius = POCKET_RADIUS;
-    this.ballHeight = POCKET_BALL_Y;
-    this.updateBallTransform();
+    if (!this.ready || !this.physics) return;
+    this.physics.placeBallInPocket(String(result));
+    this.syncPhysicsSnapshot(this.physics.snapshot());
   }
 
   reset() {
@@ -759,15 +663,9 @@ export class RouletteScene {
     this.spinState = null;
     this.spinning = false;
     this.phase = 'idle';
-    this.rotorAngle = 0;
-    this.wheelOmega = 0;
-    this.rotorGroup.rotation.y = 0;
-    this.ballAngle = 0.15;
-    this.ballAngularVelocity = 0;
-    this.ballRadius = OUTER_TRACK_RADIUS;
-    this.ballHeight = OUTER_TRACK_Y;
+    this.physics?.reset();
+    if (this.physics) this.syncPhysicsSnapshot(this.physics.snapshot());
     this.container.classList.remove('is-spinning', 'is-win', 'is-loss', 'is-push');
-    this.updateBallTransform();
   }
 
   spawnConfetti(color) {
@@ -849,29 +747,19 @@ export class RouletteScene {
   }
 
   updateBallTransform() {
-    if (!this.ball) return;
-    const local = new THREE.Vector3(
-      Math.cos(this.ballAngle) * this.ballRadius,
-      this.ballHeight,
-      Math.sin(this.ballAngle) * this.ballRadius
-    );
-    this.ball.position.copy(local);
-    this.ballGlow.position.copy(local);
+    if (this.physics) this.syncPhysicsSnapshot(this.physics.snapshot());
   }
 
   animate(now) {
     if (this.disposed) return;
     if (!this.lastFrame) this.lastFrame = now;
-    const dt = Math.min(0.035, Math.max(0, (now - this.lastFrame) / 1000));
+    const dt = Math.min(0.05, Math.max(0, (now - this.lastFrame) / 1000));
     this.lastFrame = now;
 
-    if (this.spinState) this.updateSpin(now);
+    if (this.spinState) this.updatePhysicalSpin(dt);
     this.updateEffects(dt);
 
-    const tangentialSpeed = Math.abs(this.ballAngularVelocity * Math.max(this.ballRadius, 0.1));
-    this.ball.rotation.x += dt * tangentialSpeed / BALL_RADIUS * 0.50;
-    this.ball.rotation.z += dt * tangentialSpeed / BALL_RADIUS * 0.22;
-    this.ballGlow.material.opacity = 0.065 + Math.sin(now * 0.004) * 0.012;
+    this.ballGlow.material.opacity = 0.058 + Math.sin(now * 0.004) * 0.010;
     this.bloomPass.strength = 0.34 + (this.resultLight.intensity / 52) * 0.38;
     this.composer.render();
   }
@@ -903,6 +791,7 @@ export class RouletteScene {
     this.clearEffects();
     this.disposeObject(this.scene);
     this.composer?.dispose?.();
+    this.physics?.free();
     this.renderer?.dispose();
     this.renderer?.domElement?.remove();
   }

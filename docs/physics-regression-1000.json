@@ -1,0 +1,72 @@
+{
+  "runs": 1000,
+  "uniqueResults": 37,
+  "bettingCloseSeconds": {
+    "min": 8.633333333333164,
+    "max": 9.69999999999977,
+    "average": 9.172383333333126
+  },
+  "resolutionSeconds": {
+    "min": 12.449999999999614,
+    "max": 17.749999999999314,
+    "average": 13.369066666666216
+  },
+  "trajectory": {
+    "maximumHeight": 1.8900000000000001,
+    "maximumRadius": 6.02,
+    "minimumRadius": 4.442753725452257,
+    "escaped": 0
+  },
+  "contacts": {
+    "deflectorHits": 5048,
+    "separatorHits": 1000,
+    "roundsWithDeflectorHit": 533,
+    "roundsWithSeparatorHit": 1000
+  },
+  "safetyResolved": 0,
+  "unresolved": 0,
+  "resultCounts": {
+    "0": 26,
+    "1": 21,
+    "2": 34,
+    "3": 26,
+    "4": 24,
+    "5": 29,
+    "6": 25,
+    "7": 18,
+    "8": 25,
+    "9": 26,
+    "10": 29,
+    "11": 18,
+    "12": 23,
+    "13": 28,
+    "14": 25,
+    "15": 25,
+    "16": 31,
+    "17": 37,
+    "18": 32,
+    "19": 27,
+    "20": 29,
+    "21": 25,
+    "22": 18,
+    "23": 28,
+    "24": 31,
+    "25": 27,
+    "26": 36,
+    "27": 23,
+    "28": 30,
+    "29": 20,
+    "30": 30,
+    "31": 33,
+    "32": 27,
+    "33": 29,
+    "34": 35,
+    "35": 25,
+    "36": 25
+  },
+  "uniformityChiSquare": {
+    "statistic": 30.45,
+    "degreesOfFreedom": 36,
+    "pValue": 0.7295167205726563
+  }
+}

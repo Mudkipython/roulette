@@ -1,11 +1,11 @@
 <div align="center">
 
-# Roulette Lab v6
+# Roulette Lab v7
 
 ### 多语言 3D 轮盘与概率教育实验室  
 ### A multilingual 3D roulette and probability-learning lab
 
-![Version](https://img.shields.io/badge/version-6.0.0-0A84FF)
+![Version](https://img.shields.io/badge/version-7.0.0-0A84FF)
 ![Three.js](https://img.shields.io/badge/Three.js-r185-111111?logo=threedotjs&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8.1.5-646CFF?logo=vite&logoColor=white)
 ![Node](https://img.shields.io/badge/Node.js-22.x-339933?logo=nodedotjs&logoColor=white)
@@ -37,29 +37,29 @@
 </tr>
 </table>
 
-## What changed in v6 / v6 更新
+## What changed in v7 / v7 更新
 
-- 修复概率科普侧边栏错误返回游戏的问题；章节路由现在使用 `#learn/<topic>`。
-- 将科普页改为编辑式科普刊物布局，减少圆角卡片和模板化“AI 面板”感。
-- 新增六个可切换章节：赔率、连开、下注系统、流水、项目比较、止损边界。
-- 新增互动策略实验：固定下注、马丁格尔、斐波那契、达朗贝尔、拉布谢尔、冷热号。
-- 新增连开实验、流水计算器和娱乐边界规划工具。
-- 游戏中实时识别并解释：反向追连、顺势追连、输后加码、红黑对冲、流水过高和双零风险。
-- 中英法三语内容同步更新。
+- 用固定步长物理求解器取代预设轨迹、正弦回弹和强制对准号码。
+- 外轨离轨条件与斜面运动来自轮盘极坐标动力学模型。
+- 挡板与号码隔片使用扫掠检测、碰撞冲量、摩擦和低恢复系数。
+- 最终号码由小球相对旋转转盘的稳定位置决定；3D模式不再提前抽号。
+- 新增100轮与1,000轮物理回归测试，检查飞出、穿心、超时和标签偏置。
+- 语言选择器加入国旗，同时保留中文、English、Français原生名称。
+- 规则页新增物理模型说明，明确3D物理模式与2D随机回退的区别。
 
-- Fixed the learning-sidebar bug that returned users to the game; chapter routes now use `#learn/<topic>`.
-- Rebuilt the learning area as an editorial science publication rather than a grid of generic rounded cards.
-- Added six switchable chapters: payouts, streaks, betting systems, turnover, game comparison, and limits.
-- Added interactive demonstrations for flat betting, Martingale, Fibonacci, D’Alembert, Labouchère, and hot/cold-number systems.
-- Added a streak experiment, turnover calculator, and entertainment-boundary worksheet.
-- Added contextual in-game explanations for opposite-colour chasing, hot-hand chasing, bet escalation, red/black hedging, high turnover, and double-zero risk.
-- Updated Chinese, English, and French content.
+- Replaced scripted trajectories, sinusoidal bouncing, and forced pocket alignment with a fixed-step physics solver.
+- Rim departure and inclined-stator motion follow a polar roulette-dynamics model.
+- Deflectors and pocket separators use swept checks, collision impulses, friction, and low restitution.
+- The final number is derived from the ball’s stable position relative to the rotating rotor; 3D mode does not preselect a result.
+- Added 100-round and 1,000-round physics regressions for escape, centre penetration, timeout, and label-bias checks.
+- Added flag-assisted language selection while retaining native labels: 中文, English, and Français.
+- Added an explicit rules-page explanation distinguishing the 3D physics mode from the 2D random fallback.
 
 ## Core experience / 核心体验
 
 | Area | Description |
 |---|---|
-| **Automatic roulette** | Rotor and ball animation with an open-betting phase, “no more bets,” descent, pocket settlement, and automatic next round. |
+| **Automatic roulette** | Fixed-step physical simulation with rim departure, inclined-stator motion, deflector impulses, rotating separators, settlement, and automatic next round. |
 | **Multiple bets** | Place several straight and outside bets; undo the last chip, remove one line, clear all, or repeat the previous round. |
 | **Contextual coach** | Educational prompts appear when the player exhibits recognizable probability misconceptions or risky staking patterns. |
 | **Interactive learning** | Strategy laboratories expose how bet size and bankroll requirements change while the underlying expectation does not. |
@@ -109,7 +109,7 @@ Long-run expected loss ≈ total amount wagered × house edge
 ```
 
 > [!NOTE]
-> Outcomes are sampled locally with the Web Crypto API. The 3D motion is a physics-inspired educational sequence that resolves to the sampled pocket; it is not a trajectory-prediction model or engineering-grade rigid-body simulation.
+> In 3D mode, the result is not sampled in advance: it is derived from the ball’s stable physical position relative to the rotor. The solver uses a 240 Hz fixed timestep, polar roulette dynamics, swept contact checks, collision impulses, friction, and restitution. If WebGL is unavailable, the 2D fallback samples uniformly with the Web Crypto API. This remains an educational browser simulation, not a calibrated model of a specific casino machine or a prediction tool.
 
 ## Design direction / 设计方向
 
@@ -127,7 +127,8 @@ This project is not affiliated with or endorsed by Apple.
 - Vite `8.1.5`
 - Vanilla HTML, CSS, and JavaScript
 - Canvas 2D fallback and charting
-- Web Crypto API
+- Fixed-step polar dynamics and impulse-contact solver
+- Web Crypto API for the 2D fallback and randomized initial conditions
 - Render Static Site Blueprint
 
 ## Local development / 本地运行
@@ -144,10 +145,11 @@ npm ci --no-audit --no-fund
 npm run dev
 ```
 
-Production build:
+Production build and physics regression:
 
 ```bash
 npm run build
+npm run test:physics
 npm run preview
 ```
 

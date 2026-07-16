@@ -1,0 +1,47 @@
+{
+  "identity": {
+    "title": "Roulette Lab — Game, Rules & Probability",
+    "url": "about:blank",
+    "bodyView": "play",
+    "htmlLang": "zh-CN",
+    "webgl2": false,
+    "sceneClass": "roulette-3d webgl-fallback",
+    "meaningful": 540
+  },
+  "languages": [
+    {
+      "value": "zh",
+      "text": "🇨🇳 中文"
+    },
+    {
+      "value": "en",
+      "text": "🇬🇧 English"
+    },
+    {
+      "value": "fr",
+      "text": "🇫🇷 Français"
+    }
+  ],
+  "english": {
+    "lang": "en-CA",
+    "nav": "Play",
+    "selected": "🇬🇧 English"
+  },
+  "french": {
+    "lang": "fr-CA",
+    "nav": "Jeu",
+    "selected": "🇫🇷 Français"
+  },
+  "learnRoute": {
+    "view": "learn",
+    "panel": "strategies",
+    "active": "strategies"
+  },
+  "mobile": {
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "langWidth": 104,
+    "bottomTabs": "grid"
+  },
+  "nonWebglErrors": []
+}

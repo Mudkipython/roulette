@@ -88,7 +88,7 @@ const TAU = Math.PI * 2;
 Object.assign(translations.zh, {
   configureBet:'自动轮盘与多注下注', betTable:'选择筹码后可连续下多注',
   betTableHint:'小球在外沿转动期间可追加、撤销或清空下注；小球开始向内滑落时停止下注。',
-  dragHint:'固定全景 · 自动发球 · 外沿阶段开放下注', readyToLaunch:'即将自动发球',
+  dragHint:'固定全景 · 固定步长物理求解 · 外沿阶段开放下注', readyToLaunch:'即将自动发球',
   currentBets:'本局下注', multiBetTitle:'多注清单', undoBet:'撤销一步', clearBets:'清空',
   totalCurrentBet:'本局总注', availableBankroll:'可用资金', repeatLastBets:'重复上一局下注',
   noBetsYet:'尚未下注。选择筹码后点击多个号码或外围区域。', removeBet:'移除', selectedChip:'当前筹码',
@@ -103,7 +103,7 @@ Object.assign(translations.zh, {
 Object.assign(translations.en, {
   configureBet:'Automatic table and multiple bets', betTable:'Choose a chip, then place multiple bets',
   betTableHint:'Add, undo or clear bets while the ball circles the outer track. Betting closes as it begins to descend.',
-  dragHint:'Fixed camera · Automatic launch · Bet during the outer-track phase', readyToLaunch:'Automatic launch shortly',
+  dragHint:'Fixed camera · Fixed-step physics · Bet during the outer-track phase', readyToLaunch:'Automatic launch shortly',
   currentBets:'Current round', multiBetTitle:'Multiple-bet slip', undoBet:'Undo chip', clearBets:'Clear',
   totalCurrentBet:'Total bet', availableBankroll:'Available bankroll', repeatLastBets:'Repeat previous bets',
   noBetsYet:'No bets yet. Choose a chip and click several numbers or outside areas.', removeBet:'Remove', selectedChip:'Selected chip',
@@ -118,7 +118,7 @@ Object.assign(translations.en, {
 Object.assign(translations.fr, {
   configureBet:'Table automatique et mises multiples', betTable:'Choisissez un jeton puis placez plusieurs mises',
   betTableHint:'Ajoutez, annulez ou effacez les mises pendant que la bille tourne sur la piste extérieure. Les mises ferment à la descente.',
-  dragHint:'Caméra fixe · Lancement automatique · Misez pendant la piste extérieure', readyToLaunch:'Lancement automatique imminent',
+  dragHint:'Caméra fixe · Physique à pas fixe · Misez pendant la piste extérieure', readyToLaunch:'Lancement automatique imminent',
   currentBets:'Manche actuelle', multiBetTitle:'Liste de mises multiples', undoBet:'Annuler un jeton', clearBets:'Effacer',
   totalCurrentBet:'Mise totale', availableBankroll:'Capital disponible', repeatLastBets:'Répéter les mises précédentes',
   noBetsYet:'Aucune mise. Choisissez un jeton et cliquez plusieurs numéros ou zones extérieures.', removeBet:'Retirer', selectedChip:'Jeton choisi',
@@ -150,7 +150,7 @@ Object.assign(translations.zh, {
   learnPageTitle:'为什么长期无法靠轮盘赢钱', learnPageIntro:'赌场优势不保证你每局都输，但它让每一元累计下注都带有负期望。',
   learnIndexEdge:'赌场优势', learnIndexTurnover:'资金流水', learnIndexFallacy:'赌徒谬误', learnIndexCompare:'项目比较', learnIndexResponsible:'负责任娱乐',
   edgeSectionTitle:'赔率比公平赔率少一点，赌场就能长期盈利', edgeSectionBody:'欧式轮盘有37个结果，但单号只赔35:1。红黑也不是50%，因为绿色0会让双方都输。', redProbabilityNote:'欧式轮盘押红的真实中奖率',
-  returnToGame:'回到模拟器'
+  physicsDisclosureTitle:'这次的球不是预设轨迹', physicsDisclosure:'外轨与斜面阶段依据轮盘动力学方程，以每秒240步进行数值积分；挡板和号码隔片使用连续检测、碰撞冲量、摩擦与恢复系数计算。最终号码由球相对旋转转盘的实际稳定位置决定，不会预先抽号或强制对准。WebGL 不可用时才切换为2D均匀随机回退。', returnToGame:'回到模拟器'
 });
 Object.assign(translations.en, {
   navPlay:'Play', navRules:'How to play', navLearn:'Probability', playPageTitle:'Automatic roulette table',
@@ -170,7 +170,7 @@ Object.assign(translations.en, {
   learnPageTitle:'Why roulette cannot produce reliable long-term profit', learnPageIntro:'The house edge does not make every round a loss, but it gives every unit of cumulative wagering a negative expectation.',
   learnIndexEdge:'House edge', learnIndexTurnover:'Turnover', learnIndexFallacy:'Gambler’s fallacy', learnIndexCompare:'Game comparison', learnIndexResponsible:'Responsible play',
   edgeSectionTitle:'Pay slightly less than fair odds, and the house wins over time', edgeSectionBody:'European roulette has 37 outcomes, but a straight-up number pays only 35:1. Red is not 50% either, because green 0 defeats both colours.', redProbabilityNote:'True probability of red on a European wheel',
-  returnToGame:'Return to simulator'
+  physicsDisclosureTitle:'The ball no longer follows a scripted path', physicsDisclosure:'The rim and inclined-stator stages are numerically integrated at 240 fixed steps per second. Deflectors and pocket separators use swept collision checks, impulse response, friction, and restitution. The final number comes from the ball’s stable position relative to the rotating rotor; it is not preselected or force-aligned. Only the 2D fallback uses a uniform random result when WebGL is unavailable.', returnToGame:'Return to simulator'
 });
 Object.assign(translations.fr, {
   navPlay:'Jeu', navRules:'Règles', navLearn:'Probabilités', playPageTitle:'Table de roulette automatique',
@@ -190,7 +190,7 @@ Object.assign(translations.fr, {
   learnPageTitle:'Pourquoi la roulette ne peut pas assurer un profit durable', learnPageIntro:'L’avantage de la maison ne fait pas perdre chaque manche, mais donne une espérance négative à chaque unité rejouée.',
   learnIndexEdge:'Avantage maison', learnIndexTurnover:'Volume de mises', learnIndexFallacy:'Erreur du joueur', learnIndexCompare:'Comparaison', learnIndexResponsible:'Jeu responsable',
   edgeSectionTitle:'Un paiement légèrement inférieur à la cote juste suffit à la maison', edgeSectionBody:'La roulette européenne compte 37 résultats, mais un numéro plein ne paie que 35:1. Rouge n’est pas à 50 %, car le 0 vert fait perdre les deux couleurs.', redProbabilityNote:'Probabilité réelle du rouge sur une roue européenne',
-  returnToGame:'Retour au simulateur'
+  physicsDisclosureTitle:'La bille ne suit plus une trajectoire programmée', physicsDisclosure:'Les phases sur la piste et le stator incliné sont intégrées à 240 pas fixes par seconde. Les déflecteurs et séparateurs utilisent une détection balayée, des impulsions de collision, le frottement et la restitution. Le numéro final vient de la position stable de la bille par rapport au rotor en mouvement; il n’est ni présélectionné ni forcé. Seul le mode 2D de secours utilise un résultat aléatoire uniforme lorsque WebGL est indisponible.', returnToGame:'Retour au simulateur'
 });
 
 
@@ -661,9 +661,10 @@ function settleRound(result, bets) {
   return { net, stake, returned, winningBets };
 }
 
-async function animateToResult(result, hooks = {}) {
-  if (rouletteScene?.ready) return rouletteScene.spinTo(result, hooks);
+async function animateRound(hooks = {}) {
+  if (rouletteScene?.ready) return rouletteScene.spin(hooks);
 
+  const result = randomResult();
   const order = currentOrder();
   const index = order.indexOf(result);
   const arc = TAU / order.length;
@@ -702,7 +703,7 @@ async function animateToResult(result, hooks = {}) {
         wheelRotation = -index * arc;
         drawWheel(wheelRotation);
         hooks.onPhase?.({ phase: 'settling' });
-        resolve();
+        resolve(result);
       }
     }
     requestAnimationFrame(frame);
@@ -726,8 +727,7 @@ async function playAutomaticRound() {
   els.batchButton.disabled = true;
   setStatus(t('spinning'));
 
-  const result = randomResult();
-  await animateToResult(result, {
+  const result = await animateRound({
     onCountdown: ({ seconds }) => {
       updateRoundPhase('betting-open', seconds);
       setStatus(`${t('betsCloseIn')}: ${seconds}`);
@@ -1380,7 +1380,7 @@ rouletteScene = new RouletteScene(els.roulette3D, {
   order: currentOrder(),
   onPocketClick: number => placeBet('straight', String(number))
 });
-rouletteScene.init();
+await rouletteScene.init();
 rouletteScene.setSound(els.soundToggle.checked);
 
 applyLanguage();

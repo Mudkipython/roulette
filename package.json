@@ -1,13 +1,14 @@
 {
   "name": "roulette-education-simulator",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "private": true,
   "type": "module",
-  "description": "Multilingual 3D roulette probability lab with contextual learning prompts, strategy experiments, and editorial science pages.",
+  "description": "Multilingual roulette probability lab with fixed-step physical simulation, contextual learning prompts, and editorial science pages.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test:physics": "node tests/physics-regression.mjs"
   },
   "dependencies": {
     "three": "0.185.1"

@@ -191,6 +191,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
 .icon-control:has(input:checked) span[aria-hidden] { color: var(--accent); text-shadow: 0 0 16px rgba(105,225,184,.6); }
 .compact-select select {
   min-height: 43px;
+  min-width: 122px;
   padding: 0 32px 0 13px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 14px;
@@ -655,7 +656,7 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 }
 
 @media (max-width: 560px) {
-  .compact-select select { width: 72px; padding-left: 8px; }
+  .compact-select select { min-width: 104px; width: 104px; padding-left: 8px; }
   .playfield { min-height: 540px; }
   .roulette-3d { min-height: 390px; }
   .scene-hud { font-size: .58rem; }
@@ -1006,4 +1007,45 @@ button:disabled { opacity: .48; cursor: not-allowed; }
   .chapter-heading h2 { font-size: clamp(2rem, 10vw, 2.9rem); }
   .chapter-heading { padding-bottom: 22px; }
   .learn-pagination { margin-top: 34px; }
+}
+
+
+/* v7 physics disclosure: an editorial marginal note, not another generic card. */
+.physics-disclosure {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  max-width: 1080px;
+  margin: 30px auto 10px;
+  padding: 20px 0;
+  border-top: 1px solid color-mix(in srgb, var(--ink, #172033) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink, #172033) 18%, transparent);
+}
+.physics-disclosure-mark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  opacity: .72;
+}
+.physics-disclosure h2 {
+  margin: 0 0 7px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  letter-spacing: -.015em;
+}
+.physics-disclosure p {
+  max-width: 78ch;
+  margin: 0;
+  line-height: 1.72;
+  color: var(--muted, #657086);
+}
+@media (max-width: 700px) {
+  .physics-disclosure { margin: 22px 18px 6px; gap: 12px; }
+  .physics-disclosure-mark { width: 34px; height: 34px; font-size: 18px; }
 }
