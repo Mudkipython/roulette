@@ -39,7 +39,7 @@
       </label>
       <label class="language-control compact-select">
         <span class="sr-only">Language</span>
-        <select id="languageSelect" aria-label="Language / 语言 / Langue">
+        <select id="languageSelect" aria-label="Language">
           <option value="zh">🇨🇳 中文</option>
           <option value="en">🇬🇧 English</option>
           <option value="fr">🇫🇷 Français</option>
@@ -72,7 +72,13 @@
               <div class="scene-vignette" aria-hidden="true"></div>
               <div class="scene-hud">
                 <span class="live-dot"></span>
-                <span data-i18n="dragHint">固定全景 · 自动发球 · 外沿阶段开放下注</span>
+                <span data-i18n="dragHint">拖动调整角度 · 滚轮或双指缩放 · 点击号码下注</span>
+              </div>
+              <div class="scene-controls" aria-label="Camera controls">
+                <button id="cameraResetButton" class="scene-control-button" type="button" aria-label="Reset camera" title="Reset camera">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.7 9a8 8 0 1 1-.1 6M4.7 9V4.8M4.7 9h4.2"/></svg>
+                </button>
+                <span data-i18n="cameraHint">拖动 · 缩放</span>
               </div>
               <div id="cinematicResult" class="cinematic-result" aria-live="polite">
                 <span id="cinematicResultLabel">—</span>
@@ -323,14 +329,6 @@
           </div>
         </div>
 
-        <aside class="physics-disclosure" aria-labelledby="physicsDisclosureTitle">
-          <div class="physics-disclosure-mark" aria-hidden="true">φ</div>
-          <div>
-            <h2 id="physicsDisclosureTitle" data-i18n="physicsDisclosureTitle">这次的球不是预设轨迹</h2>
-            <p data-i18n="physicsDisclosure">外轨与斜面阶段依据轮盘动力学方程，以每秒240步进行数值积分；挡板和号码隔片使用连续检测、碰撞冲量、摩擦与恢复系数计算。最终号码由球相对旋转转盘的实际稳定位置决定，不会预先抽号或强制对准。WebGL 不可用时才切换为2D均匀随机回退。</p>
-          </div>
-        </aside>
-
         <section class="reference-section" aria-labelledby="payoutHeading">
           <div class="reference-header">
             <div>
@@ -494,6 +492,53 @@
       </div>
     </section>
   </main>
+
+
+  <div id="pauseOverlay" class="pause-overlay" hidden>
+    <section class="pause-sheet glass-surface" role="dialog" aria-modal="true" aria-labelledby="pauseMenuTitle">
+      <button id="pauseCloseButton" class="pause-close" type="button" aria-label="Close pause menu">×</button>
+      <div class="pause-heading">
+        <span class="pause-mark" aria-hidden="true">Ⅱ</span>
+        <div>
+          <p data-i18n="pauseMenuKicker">桌面已暂停</p>
+          <h2 id="pauseMenuTitle" data-i18n="pauseMenuTitle">休息一下，再决定是否继续</h2>
+          <p data-i18n="pauseMenuBody">可以继续自动开局、重置资金与统计，或调整视角和声音。</p>
+        </div>
+      </div>
+
+      <div class="pause-primary-actions">
+        <button id="resumeButton" class="primary-button pause-resume" type="button" data-i18n="resumeGame">继续游戏</button>
+        <button id="resetSessionButton" class="pause-action" type="button">
+          <span aria-hidden="true">↺</span><span data-i18n="resetSession">重置本次模拟</span>
+        </button>
+        <button id="pauseCameraResetButton" class="pause-action" type="button">
+          <span aria-hidden="true">◎</span><span data-i18n="resetView">恢复默认视角</span>
+        </button>
+      </div>
+
+      <div class="pause-settings">
+        <div class="pause-section-heading">
+          <strong data-i18n="soundAndAtmosphere">声音与现场氛围</strong>
+          <span data-i18n="soundPrivacy">声音由浏览器本地合成，不加载外部音乐。</span>
+        </div>
+        <label class="setting-row">
+          <span><b data-i18n="soundEffects">声音效果</b><small data-i18n="soundEffectsNote">小球、挡板与开奖提示音</small></span>
+          <input id="pauseSfxToggle" class="switch-input" type="checkbox" checked />
+        </label>
+        <label class="setting-row">
+          <span><b data-i18n="casinoAmbience">赌场环境声</b><small data-i18n="casinoAmbienceNote">轻柔人群底噪、筹码声与原创休闲乐垫</small></span>
+          <input id="ambienceToggle" class="switch-input" type="checkbox" checked />
+        </label>
+        <label class="volume-row">
+          <span data-i18n="masterVolume">总音量</span>
+          <input id="masterVolume" type="range" min="0" max="100" step="1" value="62" />
+          <output id="masterVolumeValue" for="masterVolume">62%</output>
+        </label>
+      </div>
+
+      <p class="pause-footnote" data-i18n="pauseFootnote">重置只影响本地模拟数据，不会刷新页面或上传任何信息。</p>
+    </section>
+  </div>
 
   <nav class="bottom-tabs glass-surface" aria-label="Mobile navigation">
     <button type="button" data-view-target="play" aria-selected="true"><span>◉</span><small data-i18n="navPlay">游戏</small></button>

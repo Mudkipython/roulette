@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoulettePhysics, ROULETTE_PHYSICS_CONSTANTS } from './roulettePhysics.js';
 
 const TAU = Math.PI * 2;
@@ -27,31 +28,164 @@ function pocketColor(number) {
 class CasinoAudio {
   constructor() {
     this.context = null;
-    this.enabled = true;
+    this.effectsEnabled = true;
+    this.ambienceEnabled = true;
+    this.masterVolume = 0.62;
     this.lastTick = 0;
+    this.masterGain = null;
+    this.fxGain = null;
+    this.ambienceGain = null;
+    this.ambienceNodes = [];
+    this.ambienceTimer = null;
   }
-  setEnabled(enabled) { this.enabled = Boolean(enabled); }
+
   ensure() {
-    if (!this.enabled) return null;
-    if (!this.context) this.context = new (window.AudioContext || window.webkitAudioContext)();
-    if (this.context.state === 'suspended') this.context.resume();
+    if (!this.context) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return null;
+      this.context = new AudioContext();
+      this.masterGain = this.context.createGain();
+      this.fxGain = this.context.createGain();
+      this.ambienceGain = this.context.createGain();
+      this.masterGain.gain.value = this.masterVolume;
+      this.fxGain.gain.value = 1;
+      this.ambienceGain.gain.value = 1;
+      this.fxGain.connect(this.masterGain);
+      this.ambienceGain.connect(this.masterGain);
+      this.masterGain.connect(this.context.destination);
+    }
     return this.context;
   }
-  tone(frequency, duration = 0.05, volume = 0.015, type = 'sine', delay = 0) {
+
+  async unlock() {
     const ctx = this.ensure();
-    if (!ctx) return;
+    if (!ctx) return false;
+    if (ctx.state === 'suspended') await ctx.resume();
+    if (this.ambienceEnabled) this.startAmbience();
+    return ctx.state === 'running';
+  }
+
+  setEffectsEnabled(enabled) { this.effectsEnabled = Boolean(enabled); }
+
+  setAmbienceEnabled(enabled) {
+    this.ambienceEnabled = Boolean(enabled);
+    if (!this.ambienceEnabled) this.stopAmbience();
+    else if (this.context?.state === 'running') this.startAmbience();
+  }
+
+  setMasterVolume(value) {
+    this.masterVolume = Math.max(0, Math.min(1, Number(value) || 0));
+    if (this.masterGain && this.context) {
+      this.masterGain.gain.setTargetAtTime(this.masterVolume, this.context.currentTime, 0.035);
+    }
+  }
+
+  tone(frequency, duration = 0.05, volume = 0.015, type = 'sine', delay = 0, destination = 'fx') {
+    if (destination === 'fx' && !this.effectsEnabled) return;
+    if (destination === 'ambience' && !this.ambienceEnabled) return;
+    const ctx = this.ensure();
+    if (!ctx || ctx.state !== 'running') return;
     const start = ctx.currentTime + delay;
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, start);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), start + 0.006);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), start + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.connect(gain).connect(destination === 'ambience' ? this.ambienceGain : this.fxGain);
     oscillator.start(start);
-    oscillator.stop(start + duration + 0.03);
+    oscillator.stop(start + duration + 0.04);
   }
+
+  makeNoiseBuffer(seconds = 4) {
+    const ctx = this.ensure();
+    const length = Math.max(1, Math.floor(ctx.sampleRate * seconds));
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < length; i += 1) {
+      const white = Math.random() * 2 - 1;
+      last = last * 0.985 + white * 0.015;
+      data[i] = last * 3.4;
+    }
+    return buffer;
+  }
+
+  startAmbience() {
+    if (!this.ambienceEnabled || this.ambienceNodes.length) return;
+    const ctx = this.ensure();
+    if (!ctx || ctx.state !== 'running') return;
+
+    const roomSource = ctx.createBufferSource();
+    roomSource.buffer = this.makeNoiseBuffer(5);
+    roomSource.loop = true;
+    const roomFilter = ctx.createBiquadFilter();
+    roomFilter.type = 'lowpass';
+    roomFilter.frequency.value = 780;
+    roomFilter.Q.value = 0.7;
+    const roomGain = ctx.createGain();
+    roomGain.gain.value = 0.032;
+    roomSource.connect(roomFilter).connect(roomGain).connect(this.ambienceGain);
+    roomSource.start();
+
+    const murmurSource = ctx.createBufferSource();
+    murmurSource.buffer = this.makeNoiseBuffer(6);
+    murmurSource.loop = true;
+    const murmurFilter = ctx.createBiquadFilter();
+    murmurFilter.type = 'bandpass';
+    murmurFilter.frequency.value = 430;
+    murmurFilter.Q.value = 0.55;
+    const murmurGain = ctx.createGain();
+    murmurGain.gain.value = 0.012;
+    murmurSource.connect(murmurFilter).connect(murmurGain).connect(this.ambienceGain);
+    murmurSource.start();
+
+    const padBus = ctx.createGain();
+    padBus.gain.value = 0.012;
+    const padFilter = ctx.createBiquadFilter();
+    padFilter.type = 'lowpass';
+    padFilter.frequency.value = 620;
+    padBus.connect(padFilter).connect(this.ambienceGain);
+    const padOscillators = [110, 138.59, 164.81].map((frequency, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = index === 1 ? 'triangle' : 'sine';
+      osc.frequency.value = frequency;
+      osc.detune.value = (index - 1) * 3;
+      gain.gain.value = index === 1 ? 0.42 : 0.32;
+      osc.connect(gain).connect(padBus);
+      osc.start();
+      return osc;
+    });
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 0.07;
+    lfoGain.gain.value = 0.004;
+    lfo.connect(lfoGain).connect(padBus.gain);
+    lfo.start();
+
+    this.ambienceNodes = [roomSource, murmurSource, ...padOscillators, lfo];
+    const scheduleDistantCasinoDetail = () => {
+      if (!this.ambienceEnabled || !this.context || this.context.state !== 'running') return;
+      const base = 820 + Math.random() * 600;
+      this.tone(base, 0.025, 0.0045, 'triangle', 0, 'ambience');
+      if (Math.random() > 0.55) this.tone(base * 1.22, 0.018, 0.003, 'sine', 0.055, 'ambience');
+      this.ambienceTimer = window.setTimeout(scheduleDistantCasinoDetail, 3200 + Math.random() * 5200);
+    };
+    this.ambienceTimer = window.setTimeout(scheduleDistantCasinoDetail, 1800);
+  }
+
+  stopAmbience() {
+    if (this.ambienceTimer) window.clearTimeout(this.ambienceTimer);
+    this.ambienceTimer = null;
+    for (const node of this.ambienceNodes) {
+      try { node.stop?.(); } catch {}
+      try { node.disconnect?.(); } catch {}
+    }
+    this.ambienceNodes = [];
+  }
+
   launch() {
     this.tone(165, 0.11, 0.025, 'sawtooth');
     this.tone(390, 0.08, 0.014, 'triangle', 0.05);
@@ -75,6 +209,10 @@ class CasinoAudio {
     [523.25, 659.25, 783.99].forEach((frequency, index) => this.tone(frequency, 0.22, 0.025, 'sine', index * 0.075));
   }
   lose() { this.tone(190, 0.16, 0.018, 'triangle'); }
+  dispose() {
+    this.stopAmbience();
+    this.context?.close?.().catch?.(() => {});
+  }
 }
 
 export class RouletteScene {
@@ -108,17 +246,33 @@ export class RouletteScene {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       this.renderer.domElement.className = 'roulette-webgl-canvas';
-      this.renderer.domElement.setAttribute('aria-label', 'Fixed-view 3D roulette wheel');
+      this.renderer.domElement.setAttribute('aria-label', 'Interactive 3D roulette wheel. Drag to orbit and use the wheel or pinch to zoom.');
       this.container.appendChild(this.renderer.domElement);
 
       this.scene = new THREE.Scene();
       this.scene.background = new THREE.Color(0x06101b);
       this.scene.fog = new THREE.FogExp2(0x06101b, 0.022);
 
-      // A single fixed camera. It is never animated, damped or shaken.
+      this.cameraTarget = new THREE.Vector3(0, 0.82, 0);
+      this.defaultCameraPosition = new THREE.Vector3(0, 12.9, 9.3);
       this.camera = new THREE.PerspectiveCamera(35, 1, 0.1, 80);
-      this.camera.position.set(0, 12.9, 9.3);
-      this.camera.lookAt(0, 0.82, 0);
+      this.camera.position.copy(this.defaultCameraPosition);
+      this.camera.lookAt(this.cameraTarget);
+      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+      this.controls.target.copy(this.cameraTarget);
+      this.controls.enableDamping = true;
+      this.controls.dampingFactor = 0.075;
+      this.controls.enablePan = false;
+      this.controls.minDistance = 10.2;
+      this.controls.maxDistance = 18.2;
+      this.controls.minPolarAngle = 0.40;
+      this.controls.maxPolarAngle = 1.08;
+      this.controls.minAzimuthAngle = -0.78;
+      this.controls.maxAzimuthAngle = 0.78;
+      this.controls.rotateSpeed = 0.42;
+      this.controls.zoomSpeed = 0.78;
+      this.controls.zoomToCursor = true;
+      this.controls.saveState();
 
       this.buildLighting();
       this.buildEnvironment();
@@ -468,6 +622,9 @@ export class RouletteScene {
 
   bindPointerInteraction() {
     const canvas = this.renderer.domElement;
+    let pointerStart = null;
+    let dragged = false;
+
     const updatePointer = event => {
       const rect = canvas.getBoundingClientRect();
       this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -477,7 +634,20 @@ export class RouletteScene {
       return hits[0]?.object || null;
     };
 
+    canvas.addEventListener('pointerdown', event => {
+      pointerStart = { x: event.clientX, y: event.clientY };
+      dragged = false;
+      canvas.classList.add('is-grabbing');
+    });
+
     canvas.addEventListener('pointermove', event => {
+      if (pointerStart && Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 6) dragged = true;
+      if (dragged) {
+        if (this.hoveredPocket) this.hoveredPocket.material.emissiveIntensity = this.hoveredPocket.userData.baseEmissive;
+        this.hoveredPocket = null;
+        canvas.style.cursor = 'grabbing';
+        return;
+      }
       const pocket = updatePointer(event);
       if (this.hoveredPocket && this.hoveredPocket !== pocket) {
         this.hoveredPocket.material.emissiveIntensity = this.hoveredPocket.userData.baseEmissive;
@@ -487,19 +657,32 @@ export class RouletteScene {
         pocket.material.emissiveIntensity = 0.25;
         canvas.style.cursor = 'pointer';
       } else {
-        canvas.style.cursor = 'default';
+        canvas.style.cursor = 'grab';
       }
+    });
+
+    canvas.addEventListener('pointerup', event => {
+      canvas.classList.remove('is-grabbing');
+      const shouldSelect = pointerStart && !dragged;
+      pointerStart = null;
+      if (!shouldSelect) return;
+      const pocket = updatePointer(event);
+      if (pocket && typeof this.onPocketClick === 'function') this.onPocketClick(pocket.userData.number);
+    });
+
+    canvas.addEventListener('pointercancel', () => {
+      pointerStart = null;
+      dragged = false;
+      canvas.classList.remove('is-grabbing');
     });
 
     canvas.addEventListener('pointerleave', () => {
       if (this.hoveredPocket) this.hoveredPocket.material.emissiveIntensity = this.hoveredPocket.userData.baseEmissive;
       this.hoveredPocket = null;
-      canvas.style.cursor = 'default';
-    });
-
-    canvas.addEventListener('pointerdown', event => {
-      const pocket = updatePointer(event);
-      if (pocket && typeof this.onPocketClick === 'function') this.onPocketClick(pocket.userData.number);
+      pointerStart = null;
+      dragged = false;
+      canvas.classList.remove('is-grabbing');
+      canvas.style.cursor = 'grab';
     });
   }
 
@@ -535,7 +718,20 @@ export class RouletteScene {
     if (this.physics) this.syncPhysicsSnapshot(this.physics.snapshot());
   }
 
-  setSound(enabled) { this.audio.setEnabled(enabled); }
+  setSound(enabled) { this.audio.setEffectsEnabled(enabled); }
+  setAmbience(enabled) { this.audio.setAmbienceEnabled(enabled); }
+  setMasterVolume(value) { this.audio.setMasterVolume(value); }
+  unlockAudio() { return this.audio.unlock(); }
+  resetCamera() {
+    if (!this.controls) return;
+    this.controls.reset();
+    this.camera.position.copy(this.defaultCameraPosition);
+    this.controls.target.copy(this.cameraTarget);
+    this.controls.update();
+  }
+  getCameraState() {
+    return { position: this.camera?.position?.toArray?.() || [], target: this.controls?.target?.toArray?.() || [] };
+  }
 
   spin(hooks = {}) {
     if (!this.ready || this.spinning || !this.physics) return Promise.resolve(null);
@@ -757,6 +953,7 @@ export class RouletteScene {
     this.lastFrame = now;
 
     if (this.spinState) this.updatePhysicalSpin(dt);
+    this.controls?.update();
     this.updateEffects(dt);
 
     this.ballGlow.material.opacity = 0.058 + Math.sin(now * 0.004) * 0.010;
@@ -790,6 +987,8 @@ export class RouletteScene {
     this.resizeObserver?.disconnect();
     this.clearEffects();
     this.disposeObject(this.scene);
+    this.controls?.dispose?.();
+    this.audio?.dispose?.();
     this.composer?.dispose?.();
     this.physics?.free();
     this.renderer?.dispose();

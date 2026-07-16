@@ -1,9 +1,9 @@
 {
   "name": "roulette-education-simulator",
-  "version": "7.0.0",
+  "version": "8.0.0",
   "private": true,
   "type": "module",
-  "description": "Multilingual roulette probability lab with fixed-step physical simulation, contextual learning prompts, and editorial science pages.",
+  "description": "Multilingual physical roulette probability lab with adjustable 3D camera, procedural casino ambience, pause controls, and contextual learning.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",

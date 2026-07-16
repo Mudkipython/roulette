@@ -262,6 +262,31 @@ Object.assign(translations.fr, {
   responsibleLead:'Une limite n’améliore pas les cotes, mais empêche une session de devenir une perte inabordable.', sessionBudget:'Budget de loisir', sessionLossLimit:'Perte maximale', sessionTimeLimit:'Durée maximale (minutes)'
 });
 
+Object.assign(translations.zh, {
+  dragHint:'拖动调整角度 · 滚轮或双指缩放 · 点击号码下注', cameraHint:'拖动 · 缩放',
+  pauseMenuKicker:'桌面已暂停', pauseMenuTitle:'休息一下，再决定是否继续', pauseMenuBody:'可以继续自动开局、重置资金与统计，或调整视角和声音。',
+  resumeGame:'继续游戏', resetSession:'重置本次模拟', resetView:'恢复默认视角', soundAndAtmosphere:'声音与现场氛围',
+  soundPrivacy:'声音由浏览器本地合成，不加载外部音乐。', soundEffectsNote:'小球、挡板与开奖提示音', casinoAmbience:'赌场环境声',
+  casinoAmbienceNote:'轻柔人群底噪、筹码声与原创休闲乐垫', masterVolume:'总音量', pauseFootnote:'重置只影响本地模拟数据，不会刷新页面或上传任何信息。',
+  cameraResetDone:'已恢复默认视角。', audioUnlockHint:'首次点击页面后将启用浏览器本地合成的环境声。'
+});
+Object.assign(translations.en, {
+  dragHint:'Drag to orbit · Wheel or pinch to zoom · Click a pocket to bet', cameraHint:'Drag · Zoom',
+  pauseMenuKicker:'Table paused', pauseMenuTitle:'Take a break before deciding what comes next', pauseMenuBody:'Resume automatic rounds, reset the local session, or adjust the camera and sound.',
+  resumeGame:'Resume game', resetSession:'Reset this simulation', resetView:'Restore default view', soundAndAtmosphere:'Sound and atmosphere',
+  soundPrivacy:'Audio is generated locally in the browser; no external music is loaded.', soundEffectsNote:'Ball, deflector, and result sounds', casinoAmbience:'Casino ambience',
+  casinoAmbienceNote:'Soft room murmur, distant chips, and an original lounge pad', masterVolume:'Master volume', pauseFootnote:'Resetting only clears local simulation data. It does not refresh the page or upload information.',
+  cameraResetDone:'Default camera restored.', audioUnlockHint:'Locally generated ambience starts after the first page interaction.'
+});
+Object.assign(translations.fr, {
+  dragHint:'Glisser pour tourner · Molette ou pincement pour zoomer · Cliquer une case pour miser', cameraHint:'Glisser · Zoomer',
+  pauseMenuKicker:'Table en pause', pauseMenuTitle:'Faites une pause avant de décider de continuer', pauseMenuBody:'Reprenez les manches, réinitialisez la session locale ou ajustez la caméra et le son.',
+  resumeGame:'Reprendre le jeu', resetSession:'Réinitialiser cette simulation', resetView:'Rétablir la vue par défaut', soundAndAtmosphere:'Son et ambiance',
+  soundPrivacy:'Le son est généré localement dans le navigateur; aucune musique externe n’est chargée.', soundEffectsNote:'Bille, déflecteurs et résultat', casinoAmbience:'Ambiance de casino',
+  casinoAmbienceNote:'Murmure discret, jetons lointains et nappe lounge originale', masterVolume:'Volume général', pauseFootnote:'La réinitialisation efface seulement les données locales de simulation sans recharger la page ni envoyer de données.',
+  cameraResetDone:'Vue par défaut rétablie.', audioUnlockHint:'L’ambiance locale démarre après la première interaction avec la page.'
+});
+
 const STRATEGY_COPY = {
   zh: {
     flat:{name:'固定下注', verdict:'最透明，但仍是负期望', description:'每局下注相同金额。它不会制造“追回损失”的错觉，因此资金曲线更容易理解；长期平均损失仍等于流水乘赌场优势。', changes:'降低下注额升级带来的尾部风险，波动相对可控。', notChanges:'每一元下注的负数学期望。'},
@@ -339,6 +364,12 @@ let wheelRotation = 0;
 let activeLearnTopic = 'edge';
 let activeStrategy = 'flat';
 let coachState = { kind: null, topic: 'streaks', hidden: true, lastShownSpin: -99 };
+let pauseMenuVisible = false;
+const audioPreferences = {
+  sfx: localStorage.getItem('rouletteLabSfx') !== 'false',
+  ambience: localStorage.getItem('rouletteLabAmbience') !== 'false',
+  volume: Math.max(0, Math.min(1, Number(localStorage.getItem('rouletteLabVolume') ?? 0.62)))
+};
 
 function freshState() {
   const starting = Math.max(1, Number(els.startingBankroll?.value || 1000));
@@ -399,6 +430,53 @@ function betLabel(bet) {
 
 function setStatus(message = '') { els.statusMessage.textContent = message; }
 
+function saveAudioPreferences() {
+  localStorage.setItem('rouletteLabSfx', String(audioPreferences.sfx));
+  localStorage.setItem('rouletteLabAmbience', String(audioPreferences.ambience));
+  localStorage.setItem('rouletteLabVolume', String(audioPreferences.volume));
+}
+
+function syncAudioControls() {
+  if (els.soundToggle) els.soundToggle.checked = audioPreferences.sfx;
+  if (els.pauseSfxToggle) els.pauseSfxToggle.checked = audioPreferences.sfx;
+  if (els.ambienceToggle) els.ambienceToggle.checked = audioPreferences.ambience;
+  if (els.masterVolume) els.masterVolume.value = String(Math.round(audioPreferences.volume * 100));
+  if (els.masterVolumeValue) els.masterVolumeValue.value = `${Math.round(audioPreferences.volume * 100)}%`;
+}
+
+function applyAudioPreferences({ unlock = false } = {}) {
+  syncAudioControls();
+  if (!rouletteScene) return;
+  const playVisible = document.body.dataset.view === 'play';
+  rouletteScene.setSound(playVisible && audioPreferences.sfx);
+  rouletteScene.setAmbience(playVisible && audioPreferences.ambience);
+  rouletteScene.setMasterVolume(audioPreferences.volume);
+  if (unlock) rouletteScene.unlockAudio().catch(() => {});
+  saveAudioPreferences();
+}
+
+function showPauseMenu({ focus = true } = {}) {
+  if (!els.pauseOverlay || document.body.dataset.view !== 'play') return;
+  pauseMenuVisible = true;
+  els.pauseOverlay.hidden = false;
+  document.body.classList.add('pause-menu-open');
+  requestAnimationFrame(() => els.pauseOverlay.classList.add('is-visible'));
+  if (focus) window.setTimeout(() => els.resumeButton?.focus(), 80);
+}
+
+function hidePauseMenu() {
+  if (!els.pauseOverlay) return;
+  pauseMenuVisible = false;
+  els.pauseOverlay.classList.remove('is-visible');
+  document.body.classList.remove('pause-menu-open');
+  window.setTimeout(() => { if (!pauseMenuVisible) els.pauseOverlay.hidden = true; }, 220);
+}
+
+function resetCameraView() {
+  rouletteScene?.resetCamera();
+  setStatus(t('cameraResetDone'));
+}
+
 function applyLanguage() {
   document.documentElement.lang = translations[lang].locale;
   document.querySelectorAll('[data-i18n]').forEach(element => {
@@ -418,6 +496,7 @@ function applyLanguage() {
   updateTurnoverLab();
   updateBoundarySummary();
   refreshCoachLanguage();
+  syncAudioControls();
   localStorage.setItem('rouletteLabLanguage', lang);
 }
 
@@ -764,6 +843,7 @@ async function playAutomaticRound() {
     els.startingBankroll.disabled = false;
     updateRoundPhase('paused');
     setStatus(t('paused'));
+    showPauseMenu();
   } else {
     setStatus(t('resultHold'));
   }
@@ -784,7 +864,7 @@ async function ensureAutoLoop() {
   }
 }
 
-function toggleAuto() {
+function toggleAuto({ showMenu = true } = {}) {
   autoEnabled = !autoEnabled;
   if (!autoEnabled) {
     if (roundInProgress) setStatus(t('pausePending'));
@@ -793,11 +873,14 @@ function toggleAuto() {
       els.wheelType.disabled = false;
       els.startingBankroll.disabled = false;
       setStatus(t('paused'));
+      if (showMenu) showPauseMenu();
     }
   } else {
+    hidePauseMenu();
     els.wheelType.disabled = true;
     els.startingBankroll.disabled = true;
     setStatus(t('readyToLaunch'));
+    applyAudioPreferences({ unlock: true });
     ensureAutoLoop();
   }
   updatePauseButton();
@@ -1311,10 +1394,12 @@ function setAppView(name, { updateHash = true } = {}) {
   if (active) active.scrollTop = 0;
 
   if (view !== 'play') {
-    if (autoEnabled) toggleAuto();
+    hidePauseMenu();
+    if (autoEnabled) toggleAuto({ showMenu: false });
     rouletteScene?.setSound(false);
+    rouletteScene?.setAmbience(false);
   } else {
-    rouletteScene?.setSound(Boolean(els.soundToggle?.checked));
+    applyAudioPreferences();
     requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
   }
 }
@@ -1352,11 +1437,43 @@ document.querySelectorAll('[data-chip]').forEach(button => {
 els.undoBetButton.addEventListener('click', undoBet);
 els.clearBetsButton.addEventListener('click', clearBets);
 els.repeatBetsButton.addEventListener('click', repeatLastBets);
-els.pauseButton.addEventListener('click', toggleAuto);
+els.pauseButton.addEventListener('click', () => toggleAuto());
 els.batchButton.addEventListener('click', runBatch);
 els.resetButton.addEventListener('click', () => resetSimulation(true));
 els.resetButtonSecondary.addEventListener('click', () => resetSimulation(true));
-els.soundToggle.addEventListener('change', () => rouletteScene?.setSound(els.soundToggle.checked && document.body.dataset.view === 'play'));
+els.soundToggle.addEventListener('change', () => {
+  audioPreferences.sfx = els.soundToggle.checked;
+  applyAudioPreferences({ unlock: true });
+});
+els.pauseSfxToggle?.addEventListener('change', () => {
+  audioPreferences.sfx = els.pauseSfxToggle.checked;
+  applyAudioPreferences({ unlock: true });
+});
+els.ambienceToggle?.addEventListener('change', () => {
+  audioPreferences.ambience = els.ambienceToggle.checked;
+  applyAudioPreferences({ unlock: true });
+});
+els.masterVolume?.addEventListener('input', () => {
+  audioPreferences.volume = Number(els.masterVolume.value) / 100;
+  applyAudioPreferences({ unlock: true });
+});
+els.cameraResetButton?.addEventListener('click', resetCameraView);
+els.pauseCameraResetButton?.addEventListener('click', resetCameraView);
+els.pauseCloseButton?.addEventListener('click', hidePauseMenu);
+els.resumeButton?.addEventListener('click', () => {
+  if (!autoEnabled) toggleAuto({ showMenu: false });
+  else hidePauseMenu();
+});
+els.resetSessionButton?.addEventListener('click', () => {
+  resetSimulation(true);
+  showPauseMenu({ focus: false });
+});
+els.pauseOverlay?.addEventListener('click', event => {
+  if (event.target === els.pauseOverlay) hidePauseMenu();
+});
+window.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && pauseMenuVisible) hidePauseMenu();
+});
 els.startingBankroll.addEventListener('change', () => { if (!roundInProgress && state.spins === 0) resetSimulation(false); });
 els.wheelType.addEventListener('change', () => {
   if (roundInProgress || autoEnabled) {
@@ -1381,7 +1498,11 @@ rouletteScene = new RouletteScene(els.roulette3D, {
   onPocketClick: number => placeBet('straight', String(number))
 });
 await rouletteScene.init();
-rouletteScene.setSound(els.soundToggle.checked);
+syncAudioControls();
+applyAudioPreferences();
+const unlockAudioOnce = () => { applyAudioPreferences({ unlock: true }); };
+window.addEventListener('pointerdown', unlockAudioOnce, { once: true, passive: true });
+window.addEventListener('keydown', unlockAudioOnce, { once: true });
 
 applyLanguage();
 setInspectorPane('board');
@@ -1402,5 +1523,6 @@ window.__rouletteLab = {
   undoBet,
   clearBets,
   toggleAuto,
+  resetCamera: resetCameraView,
   scene: () => rouletteScene
 };
