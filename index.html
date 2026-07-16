@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A multilingual educational roulette simulator demonstrating house edge, expected loss, turnover, variance, and gambler's fallacy." />
+  <meta name="theme-color" content="#09111f" />
+  <title>Roulette Lab — Why the House Wins</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#simulator">Skip to simulator</a>
+
+  <header class="site-header">
+    <div class="brand-wrap">
+      <div class="brand-mark" aria-hidden="true">R</div>
+      <div>
+        <p class="eyebrow" data-i18n="eyebrow">交互式概率教育工具</p>
+        <h1 data-i18n="title">轮盘实验室：为什么赌场长期占优</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <label class="language-control">
+        <span class="sr-only">Language</span>
+        <select id="languageSelect" aria-label="Language">
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+        </select>
+      </label>
+      <a class="ghost-button" href="#knowledge" data-i18n="learnMore">知识点</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="warning-pill" data-i18n="educationalOnly">仅供概率教育，不提供真钱赌博</div>
+        <h2 data-i18n="heroTitle">你可能短期赢钱，但规则保证赌场长期盈利。</h2>
+        <p data-i18n="heroBody">亲自旋转轮盘或批量模拟数千局，观察随机波动如何围绕负数学期望展开。</p>
+        <div class="formula-card">
+          <span data-i18n="coreFormulaLabel">长期预计损失</span>
+          <strong data-i18n="coreFormula">总投注流水 × 赌场优势</strong>
+        </div>
+      </div>
+      <div class="hero-stats" aria-label="Typical house edge comparison">
+        <div><span data-i18n="euLabel">欧式轮盘</span><strong>2.70%</strong></div>
+        <div><span data-i18n="usLabel">美式轮盘</span><strong>5.26%</strong></div>
+        <div><span data-i18n="bankerLabel">百家庄押庄</span><strong>≈1.06%</strong></div>
+        <div><span data-i18n="blackjackLabel">21点基本策略</span><strong>≈0.5%</strong></div>
+      </div>
+    </section>
+
+    <section id="simulator" class="simulator-grid" aria-labelledby="simulatorHeading">
+      <div class="panel controls-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker" data-i18n="stepOne">步骤 1</p>
+            <h2 id="simulatorHeading" data-i18n="configureBet">设置下注</h2>
+          </div>
+          <button id="resetButton" class="text-button" type="button" data-i18n="reset">重置</button>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            <span data-i18n="wheelType">轮盘类型</span>
+            <select id="wheelType">
+              <option value="european" data-i18n="european">欧式单零（37格）</option>
+              <option value="american" data-i18n="american">美式双零（38格）</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="startingBankroll">初始资金</span>
+            <input id="startingBankroll" type="number" min="1" step="10" value="1000" />
+          </label>
+          <label>
+            <span data-i18n="betAmount">每局下注</span>
+            <input id="betAmount" type="number" min="1" step="1" value="10" />
+          </label>
+          <label>
+            <span data-i18n="betType">下注类型</span>
+            <select id="betType"></select>
+          </label>
+          <label id="numberField" class="full-width is-hidden">
+            <span data-i18n="chooseNumber">选择号码</span>
+            <select id="straightNumber"></select>
+          </label>
+        </div>
+
+        <div class="bet-summary" id="betSummary" aria-live="polite">
+          <div><span data-i18n="winProbability">中奖概率</span><strong id="probabilityValue">—</strong></div>
+          <div><span data-i18n="payout">净赔率</span><strong id="payoutValue">—</strong></div>
+          <div><span data-i18n="houseEdge">赌场优势</span><strong id="edgeValue">—</strong></div>
+          <div><span data-i18n="expectedLossBet">每注预计损失</span><strong id="expectedLossValue">—</strong></div>
+        </div>
+
+        <div class="action-row">
+          <button id="spinButton" class="primary-button" type="button" data-i18n="spin">旋转一次</button>
+          <div class="batch-wrap">
+            <label>
+              <span class="sr-only" data-i18n="batchSize">批量局数</span>
+              <select id="batchSize" aria-label="Batch size">
+                <option value="100">100</option>
+                <option value="1000">1,000</option>
+                <option value="10000">10,000</option>
+              </select>
+            </label>
+            <button id="batchButton" class="secondary-button" type="button" data-i18n="batchRun">批量模拟</button>
+          </div>
+        </div>
+        <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="panel wheel-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker" data-i18n="stepTwo">步骤 2</p>
+            <h2 data-i18n="observeResult">观察结果</h2>
+          </div>
+          <div id="resultBadge" class="result-badge result-green">—</div>
+        </div>
+        <div class="wheel-stage">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheelCanvas" width="720" height="720" aria-label="Roulette wheel"></canvas>
+        </div>
+        <div class="last-result">
+          <span data-i18n="lastResult">最近结果</span>
+          <strong id="lastResultText">—</strong>
+          <span id="lastOutcomeText">—</span>
+        </div>
+        <div id="historyStrip" class="history-strip" aria-label="Recent spin history"></div>
+      </div>
+    </section>
+
+    <section class="metrics-section" aria-labelledby="metricsHeading">
+      <div class="section-heading-row">
+        <div>
+          <p class="section-kicker" data-i18n="stepThree">步骤 3</p>
+          <h2 id="metricsHeading" data-i18n="compareReality">比较实际波动与理论损失</h2>
+        </div>
+        <p data-i18n="varianceNote">短期结果可能偏离理论值；局数越多，赌场优势越容易显现。</p>
+      </div>
+
+      <div class="metric-grid">
+        <article><span data-i18n="bankroll">当前资金</span><strong id="bankrollMetric">¥1,000.00</strong></article>
+        <article><span data-i18n="spins">完成局数</span><strong id="spinsMetric">0</strong></article>
+        <article><span data-i18n="totalWagered">累计流水</span><strong id="wageredMetric">¥0.00</strong></article>
+        <article><span data-i18n="actualProfit">实际盈亏</span><strong id="profitMetric">¥0.00</strong></article>
+        <article><span data-i18n="expectedProfit">理论期望盈亏</span><strong id="expectedMetric">¥0.00</strong></article>
+        <article><span data-i18n="observedReturn">实际返还率</span><strong id="returnMetric">—</strong></article>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-legend">
+          <span><i class="legend-actual"></i><span data-i18n="actualLine">实际累计盈亏</span></span>
+          <span><i class="legend-expected"></i><span data-i18n="expectedLine">理论期望盈亏</span></span>
+        </div>
+        <canvas id="profitChart" width="1200" height="420" aria-label="Cumulative profit chart"></canvas>
+      </div>
+    </section>
+
+    <section id="knowledge" class="knowledge-section" aria-labelledby="knowledgeHeading">
+      <div class="section-heading-row">
+        <div>
+          <p class="section-kicker" data-i18n="knowledgeKicker">关键知识点</p>
+          <h2 id="knowledgeHeading" data-i18n="knowledgeTitle">为什么策略无法消除赌场优势</h2>
+        </div>
+      </div>
+
+      <div class="knowledge-grid">
+        <article class="knowledge-card">
+          <div class="card-number">01</div>
+          <h3 data-i18n="turnoverTitle">真正决定损失的是流水</h3>
+          <p data-i18n="turnoverBody">带着100元并不代表最多只下注100元。同一笔钱赢回后再次下注，会形成数倍甚至数十倍流水。</p>
+          <div class="mini-equation"><span data-i18n="example">例</span>: 10 × 100 × 2.70% = 27</div>
+        </article>
+        <article class="knowledge-card">
+          <div class="card-number">02</div>
+          <h3 data-i18n="fallacyTitle">连续出红，不会让黑“该出了”</h3>
+          <p data-i18n="fallacyBody">独立轮盘的下一局概率不会被之前结果改变。寻找“冷热号”只是把随机波动误认为规律。</p>
+        </article>
+        <article class="knowledge-card">
+          <div class="card-number">03</div>
+          <h3 data-i18n="martingaleTitle">翻倍下注不能改变数学期望</h3>
+          <p data-i18n="martingaleBody">马丁格尔策略把许多小赢换成一次巨大亏损。连续6次失利后，10元起注累计需要630元。</p>
+          <div class="doubling-row" aria-label="Martingale progression">
+            <span>10</span><span>20</span><span>40</span><span>80</span><span>160</span><span>320</span>
+          </div>
+        </article>
+        <article class="knowledge-card">
+          <div class="card-number">04</div>
+          <h3 data-i18n="varianceTitle">短期赢钱不证明系统有效</h3>
+          <p data-i18n="varianceBody">负期望游戏仍会产生赢家；问题在于重复足够多次后，平均结果会向负期望靠拢。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="comparison-section" aria-labelledby="comparisonHeading">
+      <div class="section-heading-row">
+        <div>
+          <p class="section-kicker" data-i18n="comparisonKicker">典型比较</p>
+          <h2 id="comparisonHeading" data-i18n="comparisonTitle">每下注100元的长期平均损失</h2>
+        </div>
+      </div>
+      <div class="comparison-table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="game">项目</th><th data-i18n="conditions">条件</th><th data-i18n="typicalEdge">典型赌场优势</th><th data-i18n="lossPerHundred">每100元预计损失</th></tr>
+          </thead>
+          <tbody>
+            <tr><td data-i18n="blackjack">21点</td><td data-i18n="blackjackCondition">良好规则＋严格基本策略</td><td>≈0.5%</td><td>≈0.50</td></tr>
+            <tr><td data-i18n="baccarat">百家庄</td><td data-i18n="baccaratCondition">只押庄，标准5%佣金</td><td>≈1.06%</td><td>≈1.06</td></tr>
+            <tr><td data-i18n="frenchRoulette">法式轮盘</td><td>La Partage + 1:1</td><td>≈1.35%</td><td>≈1.35</td></tr>
+            <tr><td data-i18n="europeanRoulette">欧式轮盘</td><td data-i18n="singleZero">单零</td><td>2.70%</td><td>2.70</td></tr>
+            <tr><td data-i18n="americanRoulette">美式轮盘</td><td data-i18n="doubleZero">双零</td><td>5.26%</td><td>5.26</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fine-print" data-i18n="comparisonNote">这些是常见规则下的近似值；具体桌面规则、下注速度和错误决策会改变实际损失。</p>
+    </section>
+
+    <section class="responsible-section">
+      <div>
+        <p class="section-kicker" data-i18n="responsibleKicker">负责任娱乐</p>
+        <h2 data-i18n="responsibleTitle">最有效的“策略”是限制金额和时间。</h2>
+      </div>
+      <ul>
+        <li data-i18n="responsibleOne">只使用可以完全损失的娱乐预算。</li>
+        <li data-i18n="responsibleTwo">不要追损，不借钱，不把赌博当作收入来源。</li>
+        <li data-i18n="responsibleThree">预先设定停止时间和损失上限。</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p data-i18n="footerText">Roulette Lab 是开源教育演示。所有模拟均在本地浏览器中运行，不收集数据。</p>
+    <p><span data-i18n="rngNote">随机数来源：</span> <code>crypto.getRandomValues()</code></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
