@@ -13,7 +13,7 @@ const translations = {
     heroTitle:'你可能短期赢钱，但规则保证赌场长期盈利。', heroBody:'亲自旋转轮盘或批量模拟数千局，观察随机波动如何围绕负数学期望展开。',
     coreFormulaLabel:'长期预计损失', coreFormula:'总投注流水 × 赌场优势', euLabel:'欧式轮盘', usLabel:'美式轮盘', bankerLabel:'百家庄押庄', blackjackLabel:'21点基本策略',
     stepOne:'步骤 1', configureBet:'设置下注', reset:'重置', wheelType:'轮盘类型', european:'欧式单零（37格）', american:'美式双零（38格）', startingBankroll:'初始资金', betAmount:'每局下注', betType:'下注类型', chooseNumber:'选择号码',
-    interactiveBet:'交互下注台', betTable:'点击号码或外围下注', betTableHint:'也可以直接点击3D轮盘上的号码选择单号下注。', cinematicCamera:'追随镜头', soundEffects:'声音效果', dragHint:'拖动旋转视角 · 滚轮缩放 · 点击号码下注', wonBanner:'本局获胜', lostBanner:'本局落败', winProbability:'中奖概率', payout:'净赔率', houseEdge:'赌场优势', expectedLossBet:'每注预计损失', spin:'发球', batchRun:'批量模拟', batchSize:'批量局数',
+    interactiveBet:'交互下注台', betTable:'点击号码或外围下注', betTableHint:'发球后仍可在倒计时结束前修改下注；小球离开外轨时立即停止下注。', soundEffects:'声音效果', dragHint:'固定全景 · 发球前可拖动调整视角 · 点击号码下注', readyToLaunch:'准备发球', bettingOpen:'可下注', betsCloseIn:'下注倒计时', noMoreBets:'停止下注', descending:'停止下注 · 小球离开外轨，等待开奖', settling:'小球落袋中', wonBanner:'本局获胜', lostBanner:'本局落败', winProbability:'中奖概率', payout:'净赔率', houseEdge:'赌场优势', expectedLossBet:'每注预计损失', spin:'发球', batchRun:'批量模拟', batchSize:'批量局数',
     stepTwo:'步骤 2', observeResult:'观察结果', lastResult:'最近结果', win:'赢', loss:'输', push:'和局', noResult:'尚无结果',
     stepThree:'步骤 3', compareReality:'比较实际波动与理论损失', varianceNote:'短期结果可能偏离理论值；局数越多，赌场优势越容易显现。',
     bankroll:'当前资金', spins:'完成局数', totalWagered:'累计流水', actualProfit:'实际盈亏', expectedProfit:'理论期望盈亏', observedReturn:'实际返还率', actualLine:'实际累计盈亏', expectedLine:'理论期望盈亏',
@@ -24,7 +24,7 @@ const translations = {
     comparisonKicker:'典型比较', comparisonTitle:'每下注100元的长期平均损失', game:'项目', conditions:'条件', typicalEdge:'典型赌场优势', lossPerHundred:'每100元预计损失', blackjack:'21点', blackjackCondition:'良好规则＋严格基本策略', baccarat:'百家庄', baccaratCondition:'只押庄，标准5%佣金', frenchRoulette:'法式轮盘', europeanRoulette:'欧式轮盘', americanRoulette:'美式轮盘', singleZero:'单零', doubleZero:'双零', comparisonNote:'这些是常见规则下的近似值；具体桌面规则、下注速度和错误决策会改变实际损失。',
     responsibleKicker:'负责任娱乐', responsibleTitle:'最有效的“策略”是限制金额和时间。', responsibleOne:'只使用可以完全损失的娱乐预算。', responsibleTwo:'不要追损，不借钱，不把赌博当作收入来源。', responsibleThree:'预先设定停止时间和损失上限。', footerText:'Roulette Lab 是开源教育演示。所有模拟均在本地浏览器中运行，不收集数据。', rngNote:'随机数来源：',
     betRed:'红色', betBlack:'黑色', betOdd:'奇数', betEven:'偶数', betLow:'小（1–18）', betHigh:'大（19–36）', betDozen1:'第一打（1–12）', betDozen2:'第二打（13–24）', betDozen3:'第三打（25–36）', betColumn1:'第一列', betColumn2:'第二列', betColumn3:'第三列', betStraight:'单个号码',
-    insufficient:'资金不足，无法继续下注。请降低下注额或重置。', invalidInput:'请输入有效的初始资金和下注金额。', batchDone:'批量模拟完成。', batchStopped:'资金不足，模拟提前停止。', spinning:'轮盘旋转中…', resetDone:'模拟已重置。'
+    insufficient:'资金不足，无法继续下注。请降低下注额或重置。', invalidInput:'请输入有效的初始资金和下注金额。', batchDone:'批量模拟完成。', batchStopped:'资金不足，模拟提前停止。', spinning:'小球已发出，倒计时内仍可修改下注。', resetDone:'模拟已重置。'
   },
   en: {
     locale: 'en-CA', currency: '$',
@@ -32,7 +32,7 @@ const translations = {
     heroTitle:'You can win in the short run. The rules make the house win in the long run.', heroBody:'Spin once or simulate thousands of rounds to see random variance orbit a negative expected value.',
     coreFormulaLabel:'Long-run expected loss', coreFormula:'Total amount wagered × house edge', euLabel:'European roulette', usLabel:'American roulette', bankerLabel:'Baccarat — Banker', blackjackLabel:'Blackjack basic strategy',
     stepOne:'Step 1', configureBet:'Configure a bet', reset:'Reset', wheelType:'Wheel type', european:'European single-zero (37)', american:'American double-zero (38)', startingBankroll:'Starting bankroll', betAmount:'Bet per spin', betType:'Bet type', chooseNumber:'Choose a number',
-    interactiveBet:'Interactive betting table', betTable:'Click a number or outside bet', betTableHint:'You can also click a number directly on the 3D wheel.', cinematicCamera:'Cinematic follow camera', soundEffects:'Sound effects', dragHint:'Drag to orbit · Scroll to zoom · Click a pocket to bet', wonBanner:'Round won', lostBanner:'Round lost', winProbability:'Win probability', payout:'Net payout', houseEdge:'House edge', expectedLossBet:'Expected loss per bet', spin:'Launch ball', batchRun:'Run batch', batchSize:'Batch size',
+    interactiveBet:'Interactive betting table', betTable:'Click a number or outside bet', betTableHint:'You may change the bet until the countdown ends. Betting closes when the ball leaves the outer track.', soundEffects:'Sound effects', dragHint:'Fixed wide view · Adjust the camera before launch · Click a pocket to bet', readyToLaunch:'Ready to launch', bettingOpen:'Betting open', betsCloseIn:'Bets close in', noMoreBets:'No more bets', descending:'No more bets · Ball has left the outer track', settling:'Ball entering the pockets', wonBanner:'Round won', lostBanner:'Round lost', winProbability:'Win probability', payout:'Net payout', houseEdge:'House edge', expectedLossBet:'Expected loss per bet', spin:'Launch ball', batchRun:'Run batch', batchSize:'Batch size',
     stepTwo:'Step 2', observeResult:'Observe the result', lastResult:'Latest result', win:'Win', loss:'Loss', push:'Push', noResult:'No result yet',
     stepThree:'Step 3', compareReality:'Compare variance with expected loss', varianceNote:'Short-run results can deviate sharply; the house edge becomes clearer as wagers accumulate.',
     bankroll:'Current bankroll', spins:'Spins completed', totalWagered:'Total wagered', actualProfit:'Actual profit/loss', expectedProfit:'Expected profit/loss', observedReturn:'Observed return', actualLine:'Actual cumulative P/L', expectedLine:'Expected cumulative P/L',
@@ -43,7 +43,7 @@ const translations = {
     comparisonKicker:'Typical comparison', comparisonTitle:'Long-run average loss per 100 wagered', game:'Game', conditions:'Conditions', typicalEdge:'Typical house edge', lossPerHundred:'Expected loss per 100', blackjack:'Blackjack', blackjackCondition:'Good rules + strict basic strategy', baccarat:'Baccarat', baccaratCondition:'Banker only, standard 5% commission', frenchRoulette:'French roulette', europeanRoulette:'European roulette', americanRoulette:'American roulette', singleZero:'Single zero', doubleZero:'Double zero', comparisonNote:'Approximate values under common rules. Table rules, betting speed, and decision errors change actual losses.',
     responsibleKicker:'Responsible play', responsibleTitle:'The most effective “strategy” is limiting money and time.', responsibleOne:'Use only an entertainment budget you can lose completely.', responsibleTwo:'Do not chase losses, borrow, or treat gambling as income.', responsibleThree:'Set a stop time and loss limit before starting.', footerText:'Roulette Lab is an open educational demo. Simulations run locally in your browser and collect no data.', rngNote:'Randomness source:',
     betRed:'Red', betBlack:'Black', betOdd:'Odd', betEven:'Even', betLow:'Low (1–18)', betHigh:'High (19–36)', betDozen1:'1st dozen (1–12)', betDozen2:'2nd dozen (13–24)', betDozen3:'3rd dozen (25–36)', betColumn1:'1st column', betColumn2:'2nd column', betColumn3:'3rd column', betStraight:'Straight-up number',
-    insufficient:'Not enough bankroll for another bet. Lower the bet or reset.', invalidInput:'Enter a valid starting bankroll and bet amount.', batchDone:'Batch simulation complete.', batchStopped:'Simulation stopped early because the bankroll was exhausted.', spinning:'Wheel spinning…', resetDone:'Simulation reset.'
+    insufficient:'Not enough bankroll for another bet. Lower the bet or reset.', invalidInput:'Enter a valid starting bankroll and bet amount.', batchDone:'Batch simulation complete.', batchStopped:'Simulation stopped early because the bankroll was exhausted.', spinning:'Ball launched. You may change the bet until the countdown ends.', resetDone:'Simulation reset.'
   },
   fr: {
     locale: 'fr-CA', currency: '$',
@@ -51,7 +51,7 @@ const translations = {
     heroTitle:'On peut gagner à court terme. Les règles font gagner la maison à long terme.', heroBody:'Lancez une partie ou simulez des milliers de tours pour voir la variance aléatoire autour d’une espérance négative.',
     coreFormulaLabel:'Perte prévue à long terme', coreFormula:'Mises totales × avantage de la maison', euLabel:'Roulette européenne', usLabel:'Roulette américaine', bankerLabel:'Baccara — Banque', blackjackLabel:'Blackjack stratégie de base',
     stepOne:'Étape 1', configureBet:'Configurer la mise', reset:'Réinitialiser', wheelType:'Type de roulette', european:'Européenne à un zéro (37)', american:'Américaine à deux zéros (38)', startingBankroll:'Capital initial', betAmount:'Mise par tour', betType:'Type de mise', chooseNumber:'Choisir un numéro',
-    interactiveBet:'Table de mise interactive', betTable:'Cliquez un numéro ou une mise extérieure', betTableHint:'Vous pouvez aussi cliquer directement sur un numéro de la roulette 3D.', cinematicCamera:'Caméra de suivi', soundEffects:'Effets sonores', dragHint:'Glisser pour tourner · Molette pour zoomer · Cliquer pour miser', wonBanner:'Manche gagnée', lostBanner:'Manche perdue', winProbability:'Probabilité de gain', payout:'Gain net', houseEdge:'Avantage maison', expectedLossBet:'Perte prévue par mise', spin:'Lancer la bille', batchRun:'Simulation en lot', batchSize:'Nombre de tours',
+    interactiveBet:'Table de mise interactive', betTable:'Cliquez un numéro ou une mise extérieure', betTableHint:'Vous pouvez modifier la mise jusqu’à la fin du compte à rebours. Les mises ferment lorsque la bille quitte la piste extérieure.', soundEffects:'Effets sonores', dragHint:'Vue générale fixe · Ajustez la caméra avant le lancement · Cliquez pour miser', readyToLaunch:'Prêt à lancer', bettingOpen:'Mises ouvertes', betsCloseIn:'Fermeture dans', noMoreBets:'Rien ne va plus', descending:'Rien ne va plus · La bille quitte la piste extérieure', settling:'La bille entre dans les cases', wonBanner:'Manche gagnée', lostBanner:'Manche perdue', winProbability:'Probabilité de gain', payout:'Gain net', houseEdge:'Avantage maison', expectedLossBet:'Perte prévue par mise', spin:'Lancer la bille', batchRun:'Simulation en lot', batchSize:'Nombre de tours',
     stepTwo:'Étape 2', observeResult:'Observer le résultat', lastResult:'Dernier résultat', win:'Gagné', loss:'Perdu', push:'Égalité', noResult:'Aucun résultat',
     stepThree:'Étape 3', compareReality:'Comparer la variance à la perte prévue', varianceNote:'Les résultats à court terme peuvent s’écarter fortement; l’avantage maison devient plus visible avec le volume de mises.',
     bankroll:'Capital actuel', spins:'Tours effectués', totalWagered:'Total misé', actualProfit:'Gain/perte réel', expectedProfit:'Gain/perte prévu', observedReturn:'Taux de retour observé', actualLine:'Gain/perte cumulé réel', expectedLine:'Gain/perte cumulé prévu',
@@ -62,7 +62,7 @@ const translations = {
     comparisonKicker:'Comparaison typique', comparisonTitle:'Perte moyenne à long terme par 100 misés', game:'Jeu', conditions:'Conditions', typicalEdge:'Avantage maison typique', lossPerHundred:'Perte prévue par 100', blackjack:'Blackjack', blackjackCondition:'Bonnes règles + stratégie de base stricte', baccarat:'Baccara', baccaratCondition:'Banque seulement, commission standard de 5 %', frenchRoulette:'Roulette française', europeanRoulette:'Roulette européenne', americanRoulette:'Roulette américaine', singleZero:'Un zéro', doubleZero:'Deux zéros', comparisonNote:'Valeurs approximatives selon des règles courantes. Les règles, la vitesse de jeu et les erreurs modifient la perte réelle.',
     responsibleKicker:'Jeu responsable', responsibleTitle:'La meilleure « stratégie » est de limiter l’argent et le temps.', responsibleOne:'N’utilisez qu’un budget de loisir que vous pouvez perdre entièrement.', responsibleTwo:'Ne poursuivez pas les pertes, n’empruntez pas et ne traitez pas le jeu comme un revenu.', responsibleThree:'Fixez une heure d’arrêt et une limite de perte avant de commencer.', footerText:'Roulette Lab est une démonstration éducative ouverte. Les simulations s’exécutent localement et ne collectent aucune donnée.', rngNote:'Source aléatoire :',
     betRed:'Rouge', betBlack:'Noir', betOdd:'Impair', betEven:'Pair', betLow:'Manque (1–18)', betHigh:'Passe (19–36)', betDozen1:'1re douzaine (1–12)', betDozen2:'2e douzaine (13–24)', betDozen3:'3e douzaine (25–36)', betColumn1:'1re colonne', betColumn2:'2e colonne', betColumn3:'3e colonne', betStraight:'Plein (un numéro)',
-    insufficient:'Capital insuffisant pour une autre mise. Réduisez la mise ou réinitialisez.', invalidInput:'Entrez un capital initial et une mise valides.', batchDone:'Simulation en lot terminée.', batchStopped:'Simulation arrêtée : capital épuisé.', spinning:'La roulette tourne…', resetDone:'Simulation réinitialisée.'
+    insufficient:'Capital insuffisant pour une autre mise. Réduisez la mise ou réinitialisez.', invalidInput:'Entrez un capital initial et une mise valides.', batchDone:'Simulation en lot terminée.', batchStopped:'Simulation arrêtée : capital épuisé.', spinning:'Bille lancée. Vous pouvez modifier la mise jusqu’à la fin du compte à rebours.', resetDone:'Simulation réinitialisée.'
   }
 };
 
@@ -88,6 +88,9 @@ const chartCtx = els.profitChart.getContext('2d');
 let lang = localStorage.getItem('rouletteLabLanguage') || 'zh';
 let wheelRotation = 0;
 let spinning = false;
+let roundPhase = 'idle';
+let pendingBet = null;
+let lockedBet = null;
 let state = freshState();
 let rouletteScene = null;
 
@@ -102,6 +105,67 @@ function pockets() { return currentOrder().length; }
 function houseEdge() { return els.wheelType.value === 'american' ? 2/38 : 1/37; }
 function colorOf(n) { return (n === '0' || n === '00') ? 'green' : (RED_NUMBERS.has(n) ? 'red' : 'black'); }
 function betInfo() { return BETS[els.betType.value] || BETS.red; }
+
+function captureBetSnapshot() {
+  return {
+    wager: Number(els.betAmount.value),
+    type: els.betType.value,
+    selected: els.straightNumber.value
+  };
+}
+
+function isValidBetSnapshot(snapshot) {
+  return Boolean(
+    snapshot &&
+    BETS[snapshot.type] &&
+    Number.isFinite(snapshot.wager) &&
+    snapshot.wager > 0 &&
+    snapshot.wager <= state.bankroll
+  );
+}
+
+function refreshPendingBet() {
+  if (roundPhase !== 'betting-open') return;
+  const next = captureBetSnapshot();
+  if (isValidBetSnapshot(next)) pendingBet = next;
+}
+
+function setBettingEnabled(enabled) {
+  const controls = [els.betAmount, els.betType, els.straightNumber];
+  controls.forEach(control => { if (control) control.disabled = !enabled; });
+  document.querySelectorAll('.table-bet, [data-chip]').forEach(button => { button.disabled = !enabled; });
+  els.betBoard?.classList.toggle('is-locked', !enabled);
+}
+
+function updateRoundPhase(phase, seconds = null) {
+  roundPhase = phase;
+  if (!els.roundPhase) return;
+  els.roundPhase.className = `round-phase is-${phase}`;
+  const labels = {
+    idle: t('readyToLaunch'),
+    'betting-open': t('bettingOpen'),
+    'bets-closed': t('noMoreBets'),
+    descending: t('descending'),
+    settling: t('settling'),
+    resolved: t('readyToLaunch')
+  };
+  els.roundPhaseLabel.textContent = labels[phase] || labels.idle;
+  if (phase === 'betting-open' && Number.isFinite(seconds)) {
+    els.roundPhaseLabel.textContent = t('betsCloseIn');
+    els.roundCountdown.textContent = String(seconds);
+  } else {
+    els.roundCountdown.textContent = phase === 'bets-closed' ? '×' : '—';
+  }
+}
+
+function clamp01(value) { return Math.min(1, Math.max(0, value)); }
+function normalizeAngle(angle) { return ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2); }
+function shortestAngle(from, to) {
+  let delta = normalizeAngle(to) - normalizeAngle(from);
+  if (delta > Math.PI) delta -= Math.PI * 2;
+  if (delta < -Math.PI) delta += Math.PI * 2;
+  return delta;
+}
 
 function secureRandomInt(max) {
   if (!Number.isInteger(max) || max <= 0) throw new Error('Invalid max');
@@ -136,6 +200,7 @@ function applyLanguage() {
   updateLastResult();
   drawWheel();
   drawChart();
+  updateRoundPhase(roundPhase);
   localStorage.setItem('rouletteLabLanguage', lang);
 }
 
@@ -152,7 +217,7 @@ function buildBetOptions() {
 }
 
 function setBetSelection(type, number = null) {
-  if (!BETS[type]) return;
+  if (!BETS[type] || ['bets-closed','descending','settling'].includes(roundPhase)) return;
   els.betType.value = type;
   if (type === 'straight' && number !== null) {
     els.straightNumber.value = String(number);
@@ -160,6 +225,7 @@ function setBetSelection(type, number = null) {
   updateNumberOptions();
   updateBetSummary();
   buildBetBoard();
+  refreshPendingBet();
 }
 
 function makeBetButton({ label, type, number = null, className = '' }) {
@@ -216,6 +282,7 @@ function buildBetBoard() {
   layout.className = 'bet-board-main';
   layout.append(zeroRail, numberGrid);
   els.betBoard.append(layout, dozens, outside, columns);
+  if (['bets-closed','descending','settling'].includes(roundPhase)) setBettingEnabled(false);
 }
 
 function updateNumberOptions() {
@@ -365,10 +432,10 @@ function validateInputs() {
   return true;
 }
 
-function settle(result) {
-  const wager = Number(els.betAmount.value);
-  const bet = betInfo();
-  const selected = els.straightNumber.value;
+function settle(result, snapshot = captureBetSnapshot()) {
+  const wager = snapshot.wager;
+  const bet = BETS[snapshot.type] || BETS.red;
+  const selected = snapshot.selected;
   const won = bet.match(result, selected);
   state.spins += 1;
   state.wagered += wager;
@@ -386,26 +453,51 @@ function settle(result) {
 
 function randomResult() { const order=currentOrder(); return order[secureRandomInt(order.length)]; }
 
-function animateToResult(result) {
-  if (rouletteScene?.ready) return rouletteScene.spinTo(result);
-  const order=currentOrder();
-  const idx=order.indexOf(result);
-  const arc=Math.PI*2/order.length;
-  const currentNorm=((wheelRotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
-  const desired=(((-idx*arc)%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
-  let delta=desired-currentNorm;
-  if(delta<0) delta+=Math.PI*2;
-  const total=delta+Math.PI*2*6;
-  const start=wheelRotation;
-  const duration=2200;
-  const startTime=performance.now();
-  return new Promise(resolve=>{
-    function frame(now){
-      const p=Math.min(1,(now-startTime)/duration);
-      const eased=1-Math.pow(1-p,4);
-      wheelRotation=start+total*eased;
+function animateToResult(result, hooks = {}) {
+  if (rouletteScene?.ready) return rouletteScene.spinTo(result, hooks);
+
+  const order = currentOrder();
+  const index = order.indexOf(result);
+  const arc = Math.PI * 2 / order.length;
+  const start = wheelRotation;
+  const bettingDuration = 4200;
+  const descentDuration = 2600;
+  const totalDuration = bettingDuration + descentDuration;
+  const startTime = performance.now();
+  let closed = false;
+  let lastSecond = null;
+  hooks.onPhase?.({ phase:'betting-open' });
+
+  return new Promise(resolve => {
+    function frame(now) {
+      const elapsed = now - startTime;
+      if (elapsed < bettingDuration) {
+        const second = Math.max(0, Math.ceil((bettingDuration - elapsed) / 1000));
+        if (second !== lastSecond) {
+          lastSecond = second;
+          hooks.onCountdown?.({ seconds:second });
+        }
+        wheelRotation = start - elapsed * 0.0026;
+      } else {
+        if (!closed) {
+          closed = true;
+          hooks.onPhase?.({ phase:'bets-closed' });
+          hooks.onBetsClosed?.({ resultPending:true });
+          hooks.onPhase?.({ phase:'descending' });
+        }
+        const progress = clamp01((elapsed - bettingDuration) / descentDuration);
+        const target = -index * arc;
+        const remaining = shortestAngle(wheelRotation, target);
+        wheelRotation += remaining * Math.min(1, 0.035 + progress * 0.08);
+      }
       drawWheel(wheelRotation);
-      if(p<1) requestAnimationFrame(frame); else { wheelRotation=desired; drawWheel(); resolve(); }
+      if (elapsed < totalDuration) requestAnimationFrame(frame);
+      else {
+        wheelRotation = -index * arc;
+        drawWheel(wheelRotation);
+        hooks.onPhase?.({ phase:'settling' });
+        resolve();
+      }
     }
     requestAnimationFrame(frame);
   });
@@ -413,38 +505,98 @@ function animateToResult(result) {
 
 async function spinOnce() {
   if (spinning || !validateInputs()) return;
-  if (state.spins===0 && state.startingBankroll !== Number(els.startingBankroll.value)) resetSimulation(false);
-  const bet=Number(els.betAmount.value);
-  if(state.bankroll<bet){ setStatus(t('insufficient')); return; }
-  spinning=true; toggleButtons(true); setStatus(t('spinning'));
-  const result=randomResult();
-  await animateToResult(result);
-  const won=settle(result);
-  updateAll(result,won);
+  if (state.spins === 0 && state.startingBankroll !== Number(els.startingBankroll.value)) resetSimulation(false);
+
+  const launchBet = captureBetSnapshot();
+  if (!isValidBetSnapshot(launchBet)) {
+    setStatus(state.bankroll < launchBet.wager ? t('insufficient') : t('invalidInput'));
+    return;
+  }
+
+  pendingBet = launchBet;
+  lockedBet = null;
+  spinning = true;
+  toggleButtons(true);
+  setBettingEnabled(true);
+  updateRoundPhase('betting-open', 7);
+  setStatus(t('spinning'));
+
+  const result = randomResult();
+  await animateToResult(result, {
+    onCountdown: ({ seconds }) => {
+      updateRoundPhase('betting-open', seconds);
+      setStatus(`${t('betsCloseIn')}: ${seconds}`);
+    },
+    onBetsClosed: () => {
+      lockedBet = isValidBetSnapshot(pendingBet) ? { ...pendingBet } : { ...launchBet };
+      setBettingEnabled(false);
+      updateRoundPhase('bets-closed');
+      setStatus(t('noMoreBets'));
+    },
+    onPhase: ({ phase }) => {
+      if (phase === 'descending') {
+        updateRoundPhase('descending');
+        setStatus(t('descending'));
+      } else if (phase === 'settling') {
+        updateRoundPhase('settling');
+        setStatus(t('settling'));
+      }
+    }
+  });
+
+  if (!lockedBet) lockedBet = isValidBetSnapshot(pendingBet) ? { ...pendingBet } : { ...launchBet };
+  const won = settle(result, lockedBet);
+  updateAll(result, won);
+  updateRoundPhase('resolved');
   if (rouletteScene?.ready) await rouletteScene.resolveResult(won, result);
+
+  spinning = false;
+  pendingBet = null;
+  lockedBet = null;
+  toggleButtons(false);
+  setBettingEnabled(true);
+  updateRoundPhase('idle');
   setStatus('');
-  spinning=false; toggleButtons(false);
 }
 
 function runBatch() {
   if (spinning || !validateInputs()) return;
-  if (state.spins===0 && state.startingBankroll !== Number(els.startingBankroll.value)) resetSimulation(false);
-  const count=Number(els.batchSize.value);
-  const bet=Number(els.betAmount.value);
-  let last=null, won=false, completed=0;
-  spinning=true; toggleButtons(true); setStatus(t('spinning'));
-  requestAnimationFrame(()=>{
-    for(let i=0;i<count;i++){
-      if(state.bankroll<bet) break;
-      last=randomResult(); won=settle(last); completed++;
+  if (state.spins === 0 && state.startingBankroll !== Number(els.startingBankroll.value)) resetSimulation(false);
+  const batchBet = captureBetSnapshot();
+  if (!isValidBetSnapshot(batchBet)) {
+    setStatus(state.bankroll < batchBet.wager ? t('insufficient') : t('invalidInput'));
+    return;
+  }
+
+  const count = Number(els.batchSize.value);
+  let last = null;
+  let won = false;
+  let completed = 0;
+  spinning = true;
+  toggleButtons(true);
+  setBettingEnabled(false);
+  updateRoundPhase('settling');
+  setStatus(t('spinning'));
+
+  requestAnimationFrame(() => {
+    for (let i = 0; i < count; i++) {
+      if (state.bankroll < batchBet.wager) break;
+      last = randomResult();
+      won = settle(last, batchBet);
+      completed += 1;
     }
-    if(last){
-      const idx=currentOrder().indexOf(last); wheelRotation=-idx*(Math.PI*2/currentOrder().length); drawWheel();
+    if (last) {
+      const index = currentOrder().indexOf(last);
+      wheelRotation = -index * (Math.PI * 2 / currentOrder().length);
+      drawWheel();
       rouletteScene?.setResult(last);
-      updateAll(last,won);
+      updateAll(last, won);
     }
-    setStatus(completed<count ? t('batchStopped') : t('batchDone'));
-    spinning=false; toggleButtons(false);
+    setStatus(completed < count ? t('batchStopped') : t('batchDone'));
+    spinning = false;
+    toggleButtons(false);
+    setBettingEnabled(true);
+    updateRoundPhase('idle');
   });
 }
 
@@ -494,21 +646,25 @@ function resetSimulation(showMessage=true) {
   const starting=Number(els.startingBankroll.value);
   state={startingBankroll:starting,bankroll:starting,spins:0,wagered:0,returned:0,history:[],chart:[{x:0,actual:0,expected:0}]};
   wheelRotation=0;
+  pendingBet=null;
+  lockedBet=null;
+  roundPhase='idle';
   rouletteScene?.reset();
   if (els.cinematicResult) els.cinematicResult.className = 'cinematic-result';
   els.resultBadge.textContent='—'; els.resultBadge.className='result-badge result-green';
   renderHistory(); updateLastResult(); updateMetrics(); drawWheel(); drawChart();
+  setBettingEnabled(true);
+  updateRoundPhase('idle');
   if(showMessage)setStatus(t('resetDone'));
 }
 function setStatus(msg){ els.statusMessage.textContent=msg; }
-function toggleButtons(disabled){ els.spinButton.disabled=disabled; els.batchButton.disabled=disabled; els.resetButton.disabled=disabled; }
+function toggleButtons(disabled){
+  [els.spinButton, els.batchButton, els.resetButton, els.wheelType, els.startingBankroll, els.batchSize].forEach(control => { if (control) control.disabled = disabled; });
+}
 
 function initialize3D() {
   if (!els.roulette3D) return;
-  rouletteScene = new RouletteScene(els.roulette3D, {
-    order: currentOrder(),
-    cinematic: els.cinematicToggle?.checked !== false
-  });
+  rouletteScene = new RouletteScene(els.roulette3D, { order: currentOrder() });
   rouletteScene.init();
   rouletteScene.setSound(els.soundToggle?.checked !== false);
   els.roulette3D.addEventListener('roulette-pocket-select', event => {
@@ -518,11 +674,13 @@ function initialize3D() {
 }
 
 function setQuickChip(value) {
+  if (['bets-closed','descending','settling'].includes(roundPhase)) return;
   const amount = Number(value);
   if (!Number.isFinite(amount) || amount <= 0) return;
   els.betAmount.value = String(amount);
   document.querySelectorAll('[data-chip]').forEach(button => button.classList.toggle('is-active', Number(button.dataset.chip) === amount));
   updateBetSummary();
+  refreshPendingBet();
 }
 
 els.languageSelect.value=lang;
@@ -534,17 +692,17 @@ els.wheelType.addEventListener('change',()=>{
   rouletteScene?.setOrder(currentOrder());
   resetSimulation(false);
 });
-els.betType.addEventListener('change',()=>{updateNumberOptions();updateBetSummary();buildBetBoard();});
-els.straightNumber.addEventListener('change',()=>{updateBetSummary();buildBetBoard();});
+els.betType.addEventListener('change',()=>{updateNumberOptions();updateBetSummary();buildBetBoard();refreshPendingBet();});
+els.straightNumber.addEventListener('change',()=>{updateBetSummary();buildBetBoard();refreshPendingBet();});
 els.betAmount.addEventListener('input',()=>{
   updateBetSummary();
   document.querySelectorAll('[data-chip]').forEach(button => button.classList.toggle('is-active', Number(button.dataset.chip) === Number(els.betAmount.value)));
+  refreshPendingBet();
 });
 els.startingBankroll.addEventListener('change',()=>{if(state.spins===0)resetSimulation(false);});
 els.spinButton.addEventListener('click',spinOnce);
 els.batchButton.addEventListener('click',runBatch);
 els.resetButton.addEventListener('click',()=>resetSimulation(true));
-els.cinematicToggle?.addEventListener('change',()=>rouletteScene?.setCinematic(els.cinematicToggle.checked));
 els.soundToggle?.addEventListener('change',()=>rouletteScene?.setSound(els.soundToggle.checked));
 document.querySelectorAll('[data-chip]').forEach(button => button.addEventListener('click',()=>setQuickChip(button.dataset.chip)));
 window.addEventListener('resize',()=>{drawWheel();drawChart();rouletteScene?.resize();});

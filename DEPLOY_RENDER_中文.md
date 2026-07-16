@@ -1,105 +1,74 @@
-# Roulette Lab 3D：Render 部署说明
+# Roulette Lab 3D v3：Render 部署说明
 
-新版使用 Three.js 和 Vite。上传新版文件后，Render 设置必须从旧版的“无构建”改成 Vite 构建。
+本版使用 Three.js、Vite 和固定 Node 22 LTS。仓库中的 `package-lock.json` 已改为公共 npm registry，不再包含内部镜像地址。
 
-## 一、推荐：使用 Blueprint
+## 推荐：覆盖 GitHub 仓库后清缓存部署
 
-仓库根目录已经包含 `render.yaml`。
+把压缩包内的文件上传并覆盖到 GitHub 仓库根目录。不要上传 `node_modules/`；`dist/` 可不上传。
 
-1. 将项目全部文件上传到 GitHub 仓库根目录。
-2. 确认 GitHub 中可以看到：
-   - `index.html`
-   - `app.js`
-   - `src/roulette3d.js`
-   - `package.json`
-   - `package-lock.json`
-   - `render.yaml`
-3. Render Dashboard 选择 **New → Blueprint**。
-4. 选择对应 GitHub 仓库。
-5. Blueprint 文件路径保持 `render.yaml`。
-6. 点击 **Apply**。
-
-不需要数据库和环境变量。
-
-## 二、已有 Static Site：修改设置
-
-如果你已经创建了 `roulette` Static Site，在 Render 中打开：
-
-**Settings → Build & Deploy**
-
-改成：
+Render 的 Static Site 设置：
 
 ```text
 Root Directory: 留空
-Build Command: npm ci && npm run build
+Build Command: npm ci --no-audit --no-fund && npm run build
 Publish Directory: dist
 Branch: main
-Auto Deploy: Yes
 ```
 
-然后点击 **Save Changes**，再选择：
+环境变量：
 
 ```text
-Manual Deploy → Deploy latest commit
+NODE_VERSION=22.22.1
+NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
+NPM_CONFIG_REPLACE_REGISTRY_HOST=always
 ```
 
-### 旧设置不能继续使用
+如果使用仓库内的 `render.yaml` 创建 Blueprint，上述设置会自动写入。
 
-旧版曾使用：
-
-```text
-Build Command: echo "No build required"
-Publish Directory: .
-```
-
-3D新版不能继续使用这两个值，否则 Render 会发布源文件而不是 Vite 生产包。
-
-## 三、GitHub 上传注意事项
-
-需要上传源码和锁文件，但不要上传：
-
-```text
-node_modules/
-dist/
-```
-
-Render 会根据 `package-lock.json` 自动安装依赖并生成 `dist/`。
-
-## 四、成功日志
-
-正常部署会出现类似：
-
-```text
-npm ci
-npm run build
-vite build
-built in ...
-```
-
-随后状态变成 **Live**。
-
-## 五、常见错误
-
-### `Could not find package.json`
-
-说明 `package.json` 不在 Render 设置的 Root Directory 中。通常将 Root Directory 留空，并把所有文件放在仓库根目录即可。
-
-### `Publish directory dist does not exist`
-
-检查 Build Command 是否为：
-
-```text
-npm ci && npm run build
-```
-
-### 页面仍是旧版本
-
-执行一次：
+上传后执行：
 
 ```text
 Manual Deploy → Clear build cache & deploy
 ```
 
-### 3D画面不可用
+必须清除旧缓存，避免继续使用之前 Node 24 或损坏的 npm 安装缓存。
 
-网站会自动显示2D后备轮盘。先确认浏览器已启用 WebGL，并尝试最新版 Chrome、Edge、Safari 或 Firefox。
+## 正常日志
+
+```text
+Using Node.js version 22.22.1
+npm ci --no-audit --no-fund
+npm run build
+vite build
+built in ...
+```
+
+随后站点状态应变为 **Live**。
+
+## 常见问题
+
+### `Exit handler never called`
+
+确认 Node 已固定为 `22.22.1`，然后使用 **Clear build cache & deploy**。
+
+### `Could not find package.json`
+
+所有项目文件应位于仓库根目录，Root Directory 留空。
+
+### `Publish directory dist does not exist`
+
+确认 Build Command 包含 `npm run build`，Publish Directory 为 `dist`。
+
+### 页面还是旧动画
+
+确认 GitHub 最新 commit 已包含新的：
+
+```text
+src/roulette3d.js
+app.js
+index.html
+styles.css
+package-lock.json
+```
+
+然后清缓存重部署。

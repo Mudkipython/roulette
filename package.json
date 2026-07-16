@@ -1,9 +1,9 @@
 {
   "name": "roulette-education-simulator",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
-  "description": "Multilingual 3D roulette education simulator demonstrating house edge and negative expected value.",
+  "description": "Multilingual physically inspired 3D roulette education simulator demonstrating house edge and negative expected value.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
@@ -16,7 +16,7 @@
     "vite": "8.1.5"
   },
   "engines": {
-    "node": ">=22.12.0 <23.0.0"
-  },
-  "packageManager": "npm@10.9.4"
+    "node": "22.x",
+    "npm": ">=10"
+  }
 }

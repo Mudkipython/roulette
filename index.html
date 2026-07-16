@@ -127,7 +127,6 @@
           </div>
         </div>
         <div class="experience-toggles">
-          <label class="toggle-control"><input id="cinematicToggle" type="checkbox" checked><span data-i18n="cinematicCamera">追随镜头</span></label>
           <label class="toggle-control"><input id="soundToggle" type="checkbox" checked><span data-i18n="soundEffects">声音效果</span></label>
         </div>
         <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
@@ -147,7 +146,11 @@
             <div class="scene-vignette" aria-hidden="true"></div>
             <div class="scene-hud">
               <span class="live-dot"></span>
-              <span data-i18n="dragHint">拖动旋转视角 · 滚轮缩放 · 点击号码下注</span>
+              <span data-i18n="dragHint">固定全景 · 发球前可拖动调整视角 · 点击号码下注</span>
+            </div>
+            <div id="roundPhase" class="round-phase is-idle" aria-live="polite">
+              <span id="roundPhaseLabel" data-i18n="readyToLaunch">准备发球</span>
+              <strong id="roundCountdown">—</strong>
             </div>
             <div id="cinematicResult" class="cinematic-result" aria-live="polite">
               <span id="cinematicResultLabel">—</span>

@@ -599,3 +599,60 @@ code { color: #c8d9ff; }
   .chip, .table-bet, .cinematic-result, .launch-button::before { transition: none; }
   .roulette-3d.is-win, .roulette-3d.is-loss { animation: none; }
 }
+
+/* --- Physical spin sequence HUD --- */
+.round-phase {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 7px 9px 7px 14px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 999px;
+  background: rgba(3, 11, 20, .76);
+  backdrop-filter: blur(13px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.28);
+  color: rgba(231,241,255,.86);
+  pointer-events: none;
+  transition: border-color .2s ease, background .2s ease, color .2s ease;
+}
+.round-phase span { font-size: .74rem; font-weight: 820; letter-spacing: .02em; }
+.round-phase strong {
+  min-width: 31px;
+  height: 31px;
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255,255,255,.09);
+  font-size: .92rem;
+  font-variant-numeric: tabular-nums;
+}
+.round-phase.is-betting-open {
+  color: #b8ffdf;
+  border-color: rgba(93,232,183,.48);
+  background: rgba(7, 47, 38, .82);
+}
+.round-phase.is-betting-open strong { background: #65e1b9; color: #042117; box-shadow: 0 0 20px rgba(101,225,185,.28); }
+.round-phase.is-bets-closed,
+.round-phase.is-descending {
+  color: #ffe4a6;
+  border-color: rgba(255,203,99,.46);
+  background: rgba(58, 39, 10, .82);
+}
+.round-phase.is-settling { color: #d7e6ff; border-color: rgba(122,167,255,.42); }
+.bet-board.is-locked { opacity: .58; filter: saturate(.65); }
+.table-bet:disabled,
+.chip:disabled { cursor: not-allowed; transform: none !important; filter: grayscale(.25) brightness(.72); }
+.controls-panel input:disabled,
+.controls-panel select:disabled { cursor: not-allowed; opacity: .64; }
+.roulette-3d.is-loss { animation: none; }
+
+@media (max-width: 640px) {
+  .round-phase { top: 10px; left: 10px; max-width: calc(100% - 20px); }
+  .round-phase span { font-size: .67rem; }
+}
