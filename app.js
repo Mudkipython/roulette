@@ -82,59 +82,334 @@ const BETS = {
   straight: { label:'betStraight', payout:35, match:(n, selected) => n === selected }
 };
 
-const els = Object.fromEntries([...document.querySelectorAll('[id]')].map(el => [el.id, el]));
+
+const TAU = Math.PI * 2;
+
+Object.assign(translations.zh, {
+  configureBet:'自动轮盘与多注下注', betTable:'选择筹码后可连续下多注',
+  betTableHint:'小球在外沿转动期间可追加、撤销或清空下注；小球开始向内滑落时停止下注。',
+  dragHint:'固定全景 · 自动发球 · 外沿阶段开放下注', readyToLaunch:'即将自动发球',
+  currentBets:'本局下注', multiBetTitle:'多注清单', undoBet:'撤销一步', clearBets:'清空',
+  totalCurrentBet:'本局总注', availableBankroll:'可用资金', repeatLastBets:'重复上一局下注',
+  noBetsYet:'尚未下注。选择筹码后点击多个号码或外围区域。', removeBet:'移除', selectedChip:'当前筹码',
+  roundMode:'运行方式', autoRounds:'自动连续开局', pauseAfterRound:'本局后暂停', resumeAuto:'继续自动开局',
+  paused:'自动轮盘已暂停', pausePending:'本局开奖后暂停', resultHold:'等待下一局自动发球',
+  bettingNotOpen:'当前不能下注，请等待下一局外沿倒计时。', noPreviousBets:'没有可重复的上一局下注。',
+  noBatchBets:'请先完成至少一局下注，再使用批量模拟。', batchRun:'按上一局下注批量模拟',
+  netWin:'本局净赢', netLoss:'本局净亏', watchedOnly:'本局未下注', push:'持平',
+  resetWait:'请等待本局开奖后再重置。', wheelChangePaused:'请先暂停自动轮盘再切换轮盘类型。',
+  expectedLossBet:'本局预计损失', spinning:'小球已自动发出，外沿倒计时内可自由下注。'
+});
+Object.assign(translations.en, {
+  configureBet:'Automatic table and multiple bets', betTable:'Choose a chip, then place multiple bets',
+  betTableHint:'Add, undo or clear bets while the ball circles the outer track. Betting closes as it begins to descend.',
+  dragHint:'Fixed camera · Automatic launch · Bet during the outer-track phase', readyToLaunch:'Automatic launch shortly',
+  currentBets:'Current round', multiBetTitle:'Multiple-bet slip', undoBet:'Undo chip', clearBets:'Clear',
+  totalCurrentBet:'Total bet', availableBankroll:'Available bankroll', repeatLastBets:'Repeat previous bets',
+  noBetsYet:'No bets yet. Choose a chip and click several numbers or outside areas.', removeBet:'Remove', selectedChip:'Selected chip',
+  roundMode:'Round mode', autoRounds:'Continuous automatic rounds', pauseAfterRound:'Pause after round', resumeAuto:'Resume auto rounds',
+  paused:'Automatic table paused', pausePending:'Will pause after this result', resultHold:'Next ball launches automatically',
+  bettingNotOpen:'Betting is closed. Wait for the next outer-track countdown.', noPreviousBets:'There are no previous bets to repeat.',
+  noBatchBets:'Complete at least one betting round before using batch simulation.', batchRun:'Batch previous bets',
+  netWin:'Round net win', netLoss:'Round net loss', watchedOnly:'No bet this round', push:'Break even',
+  resetWait:'Wait for the current result before resetting.', wheelChangePaused:'Pause automatic rounds before changing wheel type.',
+  expectedLossBet:'Expected loss this round', spinning:'The ball launched automatically. Betting remains open during the outer-track countdown.'
+});
+Object.assign(translations.fr, {
+  configureBet:'Table automatique et mises multiples', betTable:'Choisissez un jeton puis placez plusieurs mises',
+  betTableHint:'Ajoutez, annulez ou effacez les mises pendant que la bille tourne sur la piste extérieure. Les mises ferment à la descente.',
+  dragHint:'Caméra fixe · Lancement automatique · Misez pendant la piste extérieure', readyToLaunch:'Lancement automatique imminent',
+  currentBets:'Manche actuelle', multiBetTitle:'Liste de mises multiples', undoBet:'Annuler un jeton', clearBets:'Effacer',
+  totalCurrentBet:'Mise totale', availableBankroll:'Capital disponible', repeatLastBets:'Répéter les mises précédentes',
+  noBetsYet:'Aucune mise. Choisissez un jeton et cliquez plusieurs numéros ou zones extérieures.', removeBet:'Retirer', selectedChip:'Jeton choisi',
+  roundMode:'Mode', autoRounds:'Manches automatiques continues', pauseAfterRound:'Pause après la manche', resumeAuto:'Reprendre les manches',
+  paused:'Table automatique en pause', pausePending:'Pause après ce résultat', resultHold:'Prochain lancement automatique',
+  bettingNotOpen:'Les mises sont fermées. Attendez le prochain compte à rebours extérieur.', noPreviousBets:'Aucune mise précédente à répéter.',
+  noBatchBets:'Terminez au moins une manche avec mise avant la simulation en lot.', batchRun:'Simuler les mises précédentes',
+  netWin:'Gain net de la manche', netLoss:'Perte nette de la manche', watchedOnly:'Aucune mise cette manche', push:'Équilibre',
+  resetWait:'Attendez le résultat actuel avant de réinitialiser.', wheelChangePaused:'Mettez la table en pause avant de changer de roulette.',
+  expectedLossBet:'Perte prévue de la manche', spinning:'La bille est lancée automatiquement. Les mises restent ouvertes pendant le compte à rebours extérieur.'
+});
+
+const els = Object.fromEntries([...document.querySelectorAll('[id]')].map(element => [element.id, element]));
 const wheelCtx = els.wheelCanvas.getContext('2d');
 const chartCtx = els.profitChart.getContext('2d');
+
 let lang = localStorage.getItem('rouletteLabLanguage') || 'zh';
-let wheelRotation = 0;
-let spinning = false;
+let selectedChip = 10;
 let roundPhase = 'idle';
-let pendingBet = null;
-let lockedBet = null;
+let roundInProgress = false;
+let autoEnabled = true;
+let loopActive = false;
+let currentBets = new Map();
+let betActionStack = [];
+let lockedBets = [];
+let lastBets = [];
 let state = freshState();
 let rouletteScene = null;
+let wheelRotation = 0;
 
 function freshState() {
-  const starting = Number(els.startingBankroll?.value || 1000);
-  return { startingBankroll: starting, bankroll: starting, spins:0, wagered:0, returned:0, history:[], chart:[{x:0, actual:0, expected:0}] };
+  const starting = Math.max(1, Number(els.startingBankroll?.value || 1000));
+  return {
+    startingBankroll: starting,
+    bankroll: starting,
+    spins: 0,
+    wagered: 0,
+    returned: 0,
+    history: [],
+    chart: [{ x: 0, actual: 0, expected: 0 }]
+  };
 }
 
 function t(key) { return translations[lang][key] ?? key; }
 function currentOrder() { return els.wheelType.value === 'american' ? AMERICAN_ORDER : EUROPEAN_ORDER; }
-function pockets() { return currentOrder().length; }
-function houseEdge() { return els.wheelType.value === 'american' ? 2/38 : 1/37; }
-function colorOf(n) { return (n === '0' || n === '00') ? 'green' : (RED_NUMBERS.has(n) ? 'red' : 'black'); }
-function betInfo() { return BETS[els.betType.value] || BETS.red; }
+function houseEdge() { return els.wheelType.value === 'american' ? 2 / 38 : 1 / 37; }
+function colorOf(number) {
+  if (number === '0' || number === '00') return 'green';
+  return RED_NUMBERS.has(number) ? 'red' : 'black';
+}
+function betKey(type, selected = '') { return `${type}:${selected ?? ''}`; }
+function cloneBets(bets) { return bets.map(bet => ({ ...bet })); }
+function currentBetTotal() { return [...currentBets.values()].reduce((sum, bet) => sum + bet.amount, 0); }
+function totalFor(bets) { return bets.reduce((sum, bet) => sum + bet.amount, 0); }
+function sleep(ms) { return new Promise(resolve => window.setTimeout(resolve, ms)); }
 
-function captureBetSnapshot() {
-  return {
-    wager: Number(els.betAmount.value),
-    type: els.betType.value,
-    selected: els.straightNumber.value
-  };
+function secureRandomInt(max) {
+  if (!Number.isInteger(max) || max <= 0) throw new Error('Invalid max');
+  const maxUint = 0x100000000;
+  const limit = maxUint - (maxUint % max);
+  const values = new Uint32Array(1);
+  let value;
+  do { crypto.getRandomValues(values); value = values[0]; } while (value >= limit);
+  return value % max;
 }
 
-function isValidBetSnapshot(snapshot) {
-  return Boolean(
-    snapshot &&
-    BETS[snapshot.type] &&
-    Number.isFinite(snapshot.wager) &&
-    snapshot.wager > 0 &&
-    snapshot.wager <= state.bankroll
-  );
+function randomResult() {
+  const order = currentOrder();
+  return order[secureRandomInt(order.length)];
 }
 
-function refreshPendingBet() {
-  if (roundPhase !== 'betting-open') return;
-  const next = captureBetSnapshot();
-  if (isValidBetSnapshot(next)) pendingBet = next;
+function formatMoney(value) {
+  const locale = translations[lang].locale;
+  const currency = lang === 'zh' ? 'CNY' : 'CAD';
+  return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 2 }).format(value);
+}
+function formatPercent(value, digits = 2) {
+  return new Intl.NumberFormat(translations[lang].locale, { style: 'percent', maximumFractionDigits: digits }).format(value);
+}
+function formatNumber(value) { return new Intl.NumberFormat(translations[lang].locale).format(value); }
+function signedMoney(value) { return `${value > 0 ? '+' : ''}${formatMoney(value)}`; }
+
+function betLabel(bet) {
+  if (bet.type === 'straight') return `${t('betStraight')} ${bet.selected}`;
+  return t(BETS[bet.type]?.label || bet.type);
+}
+
+function setStatus(message = '') { els.statusMessage.textContent = message; }
+
+function applyLanguage() {
+  document.documentElement.lang = translations[lang].locale;
+  document.querySelectorAll('[data-i18n]').forEach(element => {
+    const value = translations[lang][element.dataset.i18n];
+    if (value) element.textContent = value;
+  });
+  buildBetBoard();
+  renderBetSlip();
+  updateMetrics();
+  renderHistory();
+  updateLastResult();
+  drawWheel();
+  drawChart();
+  updatePauseButton();
+  updateRoundPhase(roundPhase);
+  localStorage.setItem('rouletteLabLanguage', lang);
+}
+
+function makeBetButton({ label, type, selected = '', className = '' }) {
+  const key = betKey(type, selected);
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `table-bet ${className}`.trim();
+  button.dataset.betKey = key;
+  button.dataset.betType = type;
+  button.dataset.selected = selected;
+
+  const text = document.createElement('span');
+  text.className = 'bet-label';
+  text.textContent = label;
+  button.append(text);
+
+  const existing = currentBets.get(key);
+  if (existing) {
+    const marker = document.createElement('span');
+    marker.className = 'bet-marker';
+    marker.textContent = formatNumber(existing.amount);
+    button.append(marker);
+    button.classList.add('has-bet');
+  }
+
+  button.addEventListener('click', () => placeBet(type, selected));
+  return button;
+}
+
+function buildBetBoard() {
+  if (!els.betBoard) return;
+  els.betBoard.innerHTML = '';
+
+  const zeroRail = document.createElement('div');
+  zeroRail.className = 'zero-rail';
+  zeroRail.append(makeBetButton({ label: '0', type: 'straight', selected: '0', className: 'number-bet number-green' }));
+  if (els.wheelType.value === 'american') {
+    zeroRail.append(makeBetButton({ label: '00', type: 'straight', selected: '00', className: 'number-bet number-green' }));
+  }
+
+  const numberGrid = document.createElement('div');
+  numberGrid.className = 'number-bet-grid';
+  for (let row = 0; row < 12; row++) {
+    for (let col = 1; col <= 3; col++) {
+      const number = String(row * 3 + col);
+      numberGrid.append(makeBetButton({
+        label: number,
+        type: 'straight',
+        selected: number,
+        className: `number-bet number-${colorOf(number)}`
+      }));
+    }
+  }
+
+  const dozens = document.createElement('div');
+  dozens.className = 'dozen-row';
+  ['dozen1', 'dozen2', 'dozen3'].forEach(type => {
+    dozens.append(makeBetButton({ label: t(BETS[type].label), type, className: 'outside-bet' }));
+  });
+
+  const outside = document.createElement('div');
+  outside.className = 'outside-row';
+  [
+    ['low', '1–18', ''], ['even', t('betEven'), ''], ['red', t('betRed'), 'bet-red'],
+    ['black', t('betBlack'), 'bet-black'], ['odd', t('betOdd'), ''], ['high', '19–36', '']
+  ].forEach(([type, label, extra]) => outside.append(makeBetButton({ label, type, className: `outside-bet ${extra}` })));
+
+  const columns = document.createElement('div');
+  columns.className = 'column-row';
+  ['column1', 'column2', 'column3'].forEach(type => {
+    columns.append(makeBetButton({ label: t(BETS[type].label), type, className: 'outside-bet' }));
+  });
+
+  const layout = document.createElement('div');
+  layout.className = 'bet-board-main';
+  layout.append(zeroRail, numberGrid);
+  els.betBoard.append(layout, dozens, outside, columns);
+  setBettingEnabled(roundPhase === 'betting-open');
+}
+
+function placeBet(type, selected = '') {
+  if (roundPhase !== 'betting-open') {
+    setStatus(t('bettingNotOpen'));
+    return;
+  }
+  if (!BETS[type]) return;
+  const nextTotal = currentBetTotal() + selectedChip;
+  if (nextTotal > state.bankroll) {
+    setStatus(t('insufficient'));
+    return;
+  }
+
+  const key = betKey(type, selected);
+  const existing = currentBets.get(key);
+  if (existing) existing.amount += selectedChip;
+  else currentBets.set(key, { key, type, selected, amount: selectedChip, payout: BETS[type].payout });
+  betActionStack.push({ key, amount: selectedChip });
+  setStatus('');
+  renderBetSlip();
+  buildBetBoard();
+}
+
+function undoBet() {
+  if (roundPhase !== 'betting-open') return setStatus(t('bettingNotOpen'));
+  const action = betActionStack.pop();
+  if (!action) return;
+  const bet = currentBets.get(action.key);
+  if (!bet) return;
+  bet.amount -= action.amount;
+  if (bet.amount <= 0) currentBets.delete(action.key);
+  renderBetSlip();
+  buildBetBoard();
+}
+
+function removeBet(key) {
+  if (roundPhase !== 'betting-open') return setStatus(t('bettingNotOpen'));
+  currentBets.delete(key);
+  betActionStack = betActionStack.filter(action => action.key !== key);
+  renderBetSlip();
+  buildBetBoard();
+}
+
+function clearBets() {
+  if (roundPhase !== 'betting-open') return setStatus(t('bettingNotOpen'));
+  currentBets.clear();
+  betActionStack = [];
+  renderBetSlip();
+  buildBetBoard();
+}
+
+function repeatLastBets() {
+  if (roundPhase !== 'betting-open') return setStatus(t('bettingNotOpen'));
+  if (!lastBets.length) return setStatus(t('noPreviousBets'));
+  const total = totalFor(lastBets);
+  if (total > state.bankroll) return setStatus(t('insufficient'));
+  currentBets = new Map(lastBets.map(bet => [bet.key, { ...bet }]));
+  betActionStack = lastBets.flatMap(bet => [{ key: bet.key, amount: bet.amount }]);
+  setStatus('');
+  renderBetSlip();
+  buildBetBoard();
+}
+
+function renderBetSlip() {
+  if (!els.betSlipList) return;
+  els.betSlipList.innerHTML = '';
+  const bets = [...currentBets.values()];
+  if (!bets.length) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-bets';
+    empty.textContent = t('noBetsYet');
+    els.betSlipList.append(empty);
+  } else {
+    bets.forEach(bet => {
+      const row = document.createElement('div');
+      row.className = 'bet-slip-item';
+      const label = document.createElement('span');
+      label.textContent = betLabel(bet);
+      const amount = document.createElement('strong');
+      amount.textContent = formatMoney(bet.amount);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = '×';
+      remove.title = t('removeBet');
+      remove.setAttribute('aria-label', `${t('removeBet')} ${betLabel(bet)}`);
+      remove.disabled = roundPhase !== 'betting-open';
+      remove.addEventListener('click', () => removeBet(bet.key));
+      row.append(label, amount, remove);
+      els.betSlipList.append(row);
+    });
+  }
+
+  const total = currentBetTotal();
+  els.totalCurrentBet.textContent = formatMoney(total);
+  els.availableBankroll.textContent = formatMoney(Math.max(0, state.bankroll - total));
+  els.edgeValue.textContent = formatPercent(houseEdge(), 2);
+  els.expectedLossValue.textContent = formatMoney(total * houseEdge());
+  els.selectedChipValue.textContent = formatMoney(selectedChip);
+  els.undoBetButton.disabled = roundPhase !== 'betting-open' || !betActionStack.length;
+  els.clearBetsButton.disabled = roundPhase !== 'betting-open' || !bets.length;
+  els.repeatBetsButton.disabled = roundPhase !== 'betting-open' || !lastBets.length;
 }
 
 function setBettingEnabled(enabled) {
-  const controls = [els.betAmount, els.betType, els.straightNumber];
-  controls.forEach(control => { if (control) control.disabled = !enabled; });
-  document.querySelectorAll('.table-bet, [data-chip]').forEach(button => { button.disabled = !enabled; });
+  document.querySelectorAll('.table-bet').forEach(button => { button.disabled = !enabled; });
   els.betBoard?.classList.toggle('is-locked', !enabled);
+  renderBetSlip();
 }
 
 function updateRoundPhase(phase, seconds = null) {
@@ -143,330 +418,66 @@ function updateRoundPhase(phase, seconds = null) {
   els.roundPhase.className = `round-phase is-${phase}`;
   const labels = {
     idle: t('readyToLaunch'),
+    paused: t('paused'),
     'betting-open': t('bettingOpen'),
     'bets-closed': t('noMoreBets'),
     descending: t('descending'),
     settling: t('settling'),
-    resolved: t('readyToLaunch')
+    resolved: t('resultHold')
   };
   els.roundPhaseLabel.textContent = labels[phase] || labels.idle;
   if (phase === 'betting-open' && Number.isFinite(seconds)) {
     els.roundPhaseLabel.textContent = t('betsCloseIn');
     els.roundCountdown.textContent = String(seconds);
+  } else if (phase === 'bets-closed' || phase === 'descending') {
+    els.roundCountdown.textContent = '×';
   } else {
-    els.roundCountdown.textContent = phase === 'bets-closed' ? '×' : '—';
+    els.roundCountdown.textContent = '—';
   }
+  setBettingEnabled(phase === 'betting-open');
 }
 
-function clamp01(value) { return Math.min(1, Math.max(0, value)); }
-function normalizeAngle(angle) { return ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2); }
-function shortestAngle(from, to) {
-  let delta = normalizeAngle(to) - normalizeAngle(from);
-  if (delta > Math.PI) delta -= Math.PI * 2;
-  if (delta < -Math.PI) delta += Math.PI * 2;
-  return delta;
-}
+function settleRound(result, bets) {
+  const stake = totalFor(bets);
+  state.spins += 1;
+  state.wagered += stake;
+  state.bankroll -= stake;
 
-function secureRandomInt(max) {
-  if (!Number.isInteger(max) || max <= 0) throw new Error('Invalid max');
-  const maxUint = 0x100000000;
-  const limit = maxUint - (maxUint % max);
-  const arr = new Uint32Array(1);
-  let x;
-  do { crypto.getRandomValues(arr); x = arr[0]; } while (x >= limit);
-  return x % max;
-}
-
-function formatMoney(value) {
-  const locale = translations[lang].locale;
-  const currency = lang === 'zh' ? 'CNY' : 'CAD';
-  return new Intl.NumberFormat(locale, { style:'currency', currency, maximumFractionDigits:2 }).format(value);
-}
-function formatPercent(value, digits=2) { return new Intl.NumberFormat(translations[lang].locale, { style:'percent', maximumFractionDigits:digits }).format(value); }
-function formatNumber(value) { return new Intl.NumberFormat(translations[lang].locale).format(value); }
-
-function applyLanguage() {
-  document.documentElement.lang = translations[lang].locale;
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (translations[lang][key]) el.textContent = translations[lang][key];
-  });
-  buildBetOptions();
-  updateNumberOptions();
-  buildBetBoard();
-  updateBetSummary();
-  updateMetrics();
-  renderHistory();
-  updateLastResult();
-  drawWheel();
-  drawChart();
-  updateRoundPhase(roundPhase);
-  localStorage.setItem('rouletteLabLanguage', lang);
-}
-
-function buildBetOptions() {
-  const selected = els.betType.value || 'red';
-  els.betType.innerHTML = '';
-  Object.entries(BETS).forEach(([value, cfg]) => {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = t(cfg.label);
-    els.betType.append(option);
-  });
-  els.betType.value = BETS[selected] ? selected : 'red';
-}
-
-function setBetSelection(type, number = null) {
-  if (!BETS[type] || ['bets-closed','descending','settling'].includes(roundPhase)) return;
-  els.betType.value = type;
-  if (type === 'straight' && number !== null) {
-    els.straightNumber.value = String(number);
-  }
-  updateNumberOptions();
-  updateBetSummary();
-  buildBetBoard();
-  refreshPendingBet();
-}
-
-function makeBetButton({ label, type, number = null, className = '' }) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = `table-bet ${className}`.trim();
-  button.textContent = label;
-  button.dataset.betType = type;
-  if (number !== null) button.dataset.number = String(number);
-  const isSelected = type === els.betType.value && (type !== 'straight' || String(number) === els.straightNumber.value);
-  button.classList.toggle('is-selected', isSelected);
-  button.addEventListener('click', () => setBetSelection(type, number));
-  return button;
-}
-
-function buildBetBoard() {
-  if (!els.betBoard) return;
-  els.betBoard.innerHTML = '';
-  const zeroRail = document.createElement('div');
-  zeroRail.className = 'zero-rail';
-  zeroRail.append(makeBetButton({ label:'0', type:'straight', number:'0', className:'number-bet number-green' }));
-  if (els.wheelType.value === 'american') zeroRail.append(makeBetButton({ label:'00', type:'straight', number:'00', className:'number-bet number-green' }));
-
-  const numberGrid = document.createElement('div');
-  numberGrid.className = 'number-bet-grid';
-  for (let row = 0; row < 12; row++) {
-    for (let col = 1; col <= 3; col++) {
-      const number = String(row * 3 + col);
-      numberGrid.append(makeBetButton({
-        label:number,
-        type:'straight',
-        number,
-        className:`number-bet number-${colorOf(number)}`
-      }));
+  let returned = 0;
+  let winningBets = 0;
+  for (const bet of bets) {
+    const config = BETS[bet.type];
+    if (config?.match(result, bet.selected)) {
+      returned += bet.amount * (config.payout + 1);
+      winningBets += 1;
     }
   }
-
-  const dozens = document.createElement('div');
-  dozens.className = 'dozen-row';
-  ['dozen1','dozen2','dozen3'].forEach(type => dozens.append(makeBetButton({ label:t(BETS[type].label), type, className:'outside-bet' })));
-
-  const outside = document.createElement('div');
-  outside.className = 'outside-row';
-  [
-    ['low','1–18',''], ['even',t('betEven'),''], ['red',t('betRed'),'bet-red'],
-    ['black',t('betBlack'),'bet-black'], ['odd',t('betOdd'),''], ['high','19–36','']
-  ].forEach(([type,label,cls]) => outside.append(makeBetButton({ label, type, className:`outside-bet ${cls}` })));
-
-  const columns = document.createElement('div');
-  columns.className = 'column-row';
-  ['column1','column2','column3'].forEach(type => columns.append(makeBetButton({ label:t(BETS[type].label), type, className:'outside-bet' })));
-
-  const layout = document.createElement('div');
-  layout.className = 'bet-board-main';
-  layout.append(zeroRail, numberGrid);
-  els.betBoard.append(layout, dozens, outside, columns);
-  if (['bets-closed','descending','settling'].includes(roundPhase)) setBettingEnabled(false);
-}
-
-function updateNumberOptions() {
-  const previous = els.straightNumber.value || '17';
-  els.straightNumber.innerHTML = '';
-  const nums = els.wheelType.value === 'american' ? ['0','00', ...Array.from({length:36},(_,i)=>String(i+1))] : ['0', ...Array.from({length:36},(_,i)=>String(i+1))];
-  nums.forEach(n => {
-    const option = document.createElement('option');
-    option.value = n;
-    option.textContent = n;
-    els.straightNumber.append(option);
-  });
-  els.straightNumber.value = nums.includes(previous) ? previous : '17';
-  els.numberField.classList.toggle('is-hidden', els.betType.value !== 'straight');
-}
-
-function coveredCount() {
-  const bet = betInfo();
-  const selected = els.straightNumber.value;
-  return currentOrder().filter(n => bet.match(n, selected)).length;
-}
-
-function updateBetSummary() {
-  const bet = betInfo();
-  const count = coveredCount();
-  const probability = count / pockets();
-  const wager = Math.max(0, Number(els.betAmount.value) || 0);
-  els.probabilityValue.textContent = `${formatPercent(probability, 3)} (${count}/${pockets()})`;
-  els.payoutValue.textContent = `${bet.payout}:1`;
-  els.edgeValue.textContent = formatPercent(houseEdge(), 2);
-  els.expectedLossValue.textContent = formatMoney(wager * houseEdge());
-}
-
-function drawWheel(rotation = wheelRotation) {
-  const canvas = els.wheelCanvas;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const cssSize = Math.max(300, canvas.getBoundingClientRect().width || 610);
-  canvas.width = Math.round(cssSize * dpr);
-  canvas.height = Math.round(cssSize * dpr);
-  wheelCtx.setTransform(dpr,0,0,dpr,0,0);
-  const size = cssSize;
-  const cx = size/2, cy = size/2;
-  const outer = size*.46;
-  const inner = size*.29;
-  const hub = size*.09;
-  const order = currentOrder();
-  const arc = Math.PI*2/order.length;
-
-  wheelCtx.clearRect(0,0,size,size);
-  wheelCtx.save();
-  wheelCtx.translate(cx,cy);
-
-  const outerGrad = wheelCtx.createRadialGradient(0,0,inner,0,0,outer*1.08);
-  outerGrad.addColorStop(0,'#173154');
-  outerGrad.addColorStop(.7,'#0a1526');
-  outerGrad.addColorStop(1,'#050a12');
-  wheelCtx.beginPath(); wheelCtx.arc(0,0,outer*1.08,0,Math.PI*2); wheelCtx.fillStyle=outerGrad; wheelCtx.fill();
-  wheelCtx.lineWidth = size*.018; wheelCtx.strokeStyle='#d9aa4f'; wheelCtx.stroke();
-
-  for (let i=0;i<order.length;i++) {
-    const start = -Math.PI/2 - arc/2 + i*arc + rotation;
-    const end = start + arc;
-    const n = order[i];
-    const c = colorOf(n);
-    wheelCtx.beginPath();
-    wheelCtx.arc(0,0,outer,start,end);
-    wheelCtx.arc(0,0,inner,end,start,true);
-    wheelCtx.closePath();
-    wheelCtx.fillStyle = c==='red' ? '#c93643' : c==='black' ? '#151e2a' : '#159a68';
-    wheelCtx.fill();
-    wheelCtx.strokeStyle='rgba(255,255,255,.24)'; wheelCtx.lineWidth=1; wheelCtx.stroke();
-
-    wheelCtx.save();
-    wheelCtx.rotate(start + arc/2);
-    wheelCtx.translate((outer+inner)/2,0);
-    wheelCtx.rotate(Math.PI/2);
-    wheelCtx.fillStyle='#fff';
-    wheelCtx.font=`800 ${Math.max(9,size*.018)}px system-ui`;
-    wheelCtx.textAlign='center'; wheelCtx.textBaseline='middle';
-    wheelCtx.fillText(n,0,0);
-    wheelCtx.restore();
-  }
-
-  wheelCtx.beginPath(); wheelCtx.arc(0,0,inner*.98,0,Math.PI*2); wheelCtx.fillStyle='#11243e'; wheelCtx.fill();
-  wheelCtx.strokeStyle='#d9aa4f'; wheelCtx.lineWidth=size*.012; wheelCtx.stroke();
-
-  for (let i=0;i<12;i++) {
-    const a=i*Math.PI/6+rotation*.22;
-    wheelCtx.beginPath(); wheelCtx.moveTo(Math.cos(a)*hub,Math.sin(a)*hub); wheelCtx.lineTo(Math.cos(a)*inner*.91,Math.sin(a)*inner*.91);
-    wheelCtx.strokeStyle='rgba(122,167,255,.18)'; wheelCtx.lineWidth=2; wheelCtx.stroke();
-  }
-  const hubGrad = wheelCtx.createRadialGradient(-hub*.25,-hub*.25,hub*.1,0,0,hub);
-  hubGrad.addColorStop(0,'#fff2bd'); hubGrad.addColorStop(.35,'#e2b85f'); hubGrad.addColorStop(1,'#8e5a18');
-  wheelCtx.beginPath(); wheelCtx.arc(0,0,hub,0,Math.PI*2); wheelCtx.fillStyle=hubGrad; wheelCtx.fill();
-  wheelCtx.lineWidth=3; wheelCtx.strokeStyle='#ffd983'; wheelCtx.stroke();
-  wheelCtx.fillStyle='#07101d'; wheelCtx.font=`900 ${size*.045}px system-ui`; wheelCtx.textAlign='center'; wheelCtx.textBaseline='middle'; wheelCtx.fillText('R',0,2);
-  wheelCtx.restore();
-}
-
-function drawChart() {
-  const canvas = els.profitChart;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const width = Math.max(320, canvas.getBoundingClientRect().width || 1000);
-  const height = Math.max(220, canvas.getBoundingClientRect().height || 290);
-  canvas.width = Math.round(width*dpr); canvas.height = Math.round(height*dpr);
-  chartCtx.setTransform(dpr,0,0,dpr,0,0);
-  chartCtx.clearRect(0,0,width,height);
-  const pad={l:58,r:18,t:16,b:34};
-  const points = downsample(state.chart, 700);
-  const values = points.flatMap(p=>[p.actual,p.expected,0]);
-  let min=Math.min(...values), max=Math.max(...values);
-  if (min===max) { min-=1; max+=1; }
-  const margin=(max-min)*.12 || 1; min-=margin; max+=margin;
-  const maxX=Math.max(1,points.at(-1)?.x || 1);
-  const x=v=>pad.l+(v/maxX)*(width-pad.l-pad.r);
-  const y=v=>pad.t+(max-v)/(max-min)*(height-pad.t-pad.b);
-
-  chartCtx.strokeStyle='rgba(255,255,255,.09)'; chartCtx.lineWidth=1;
-  chartCtx.fillStyle='rgba(159,176,200,.75)'; chartCtx.font='12px system-ui'; chartCtx.textAlign='right'; chartCtx.textBaseline='middle';
-  for(let i=0;i<=4;i++){
-    const val=min+(max-min)*i/4; const yy=y(val);
-    chartCtx.beginPath(); chartCtx.moveTo(pad.l,yy); chartCtx.lineTo(width-pad.r,yy); chartCtx.stroke();
-    chartCtx.fillText(formatMoney(val),pad.l-8,yy);
-  }
-  chartCtx.textAlign='center'; chartCtx.textBaseline='top';
-  for(let i=0;i<=4;i++){
-    const val=Math.round(maxX*i/4); const xx=x(val);
-    chartCtx.fillText(formatNumber(val),xx,height-pad.b+9);
-  }
-  const css = getComputedStyle(document.documentElement);
-  drawSeries(points,'actual',css.getPropertyValue('--accent-2').trim(),2.6,x,y);
-  drawSeries(points,'expected',css.getPropertyValue('--danger').trim(),2,x,y,[7,6]);
-}
-function drawSeries(points,key,color,lineWidth,x,y,dash=[]) {
-  chartCtx.save(); chartCtx.beginPath();
-  points.forEach((p,i)=>{ const xx=x(p.x), yy=y(p[key]); i?chartCtx.lineTo(xx,yy):chartCtx.moveTo(xx,yy); });
-  chartCtx.strokeStyle=color; chartCtx.lineWidth=lineWidth; chartCtx.setLineDash(dash); chartCtx.stroke(); chartCtx.restore();
-}
-function downsample(arr,maxPoints){ if(arr.length<=maxPoints) return arr; const step=(arr.length-1)/(maxPoints-1); return Array.from({length:maxPoints},(_,i)=>arr[Math.round(i*step)]); }
-
-function validateInputs() {
-  const start = Number(els.startingBankroll.value);
-  const bet = Number(els.betAmount.value);
-  if (!Number.isFinite(start) || start <= 0 || !Number.isFinite(bet) || bet <= 0) {
-    setStatus(t('invalidInput')); return false;
-  }
-  return true;
-}
-
-function settle(result, snapshot = captureBetSnapshot()) {
-  const wager = snapshot.wager;
-  const bet = BETS[snapshot.type] || BETS.red;
-  const selected = snapshot.selected;
-  const won = bet.match(result, selected);
-  state.spins += 1;
-  state.wagered += wager;
-  state.bankroll -= wager;
-  let returned = 0;
-  if (won) { returned = wager * (bet.payout + 1); state.bankroll += returned; }
+  state.bankroll += returned;
   state.returned += returned;
+
+  const net = returned - stake;
   const actual = state.bankroll - state.startingBankroll;
   const expected = -state.wagered * houseEdge();
-  state.history.unshift({result,won});
-  state.history = state.history.slice(0,12);
-  state.chart.push({x:state.spins,actual,expected});
-  return won;
+  state.history.unshift({ result, net, stake, winningBets });
+  state.history = state.history.slice(0, 14);
+  state.chart.push({ x: state.spins, actual, expected });
+  return { net, stake, returned, winningBets };
 }
 
-function randomResult() { const order=currentOrder(); return order[secureRandomInt(order.length)]; }
-
-function animateToResult(result, hooks = {}) {
+async function animateToResult(result, hooks = {}) {
   if (rouletteScene?.ready) return rouletteScene.spinTo(result, hooks);
 
   const order = currentOrder();
   const index = order.indexOf(result);
-  const arc = Math.PI * 2 / order.length;
+  const arc = TAU / order.length;
   const start = wheelRotation;
-  const bettingDuration = 4200;
-  const descentDuration = 2600;
+  const bettingDuration = 6500;
+  const descentDuration = 2500;
   const totalDuration = bettingDuration + descentDuration;
   const startTime = performance.now();
   let closed = false;
   let lastSecond = null;
-  hooks.onPhase?.({ phase:'betting-open' });
+  hooks.onPhase?.({ phase: 'betting-open' });
 
   return new Promise(resolve => {
     function frame(now) {
@@ -475,27 +486,25 @@ function animateToResult(result, hooks = {}) {
         const second = Math.max(0, Math.ceil((bettingDuration - elapsed) / 1000));
         if (second !== lastSecond) {
           lastSecond = second;
-          hooks.onCountdown?.({ seconds:second });
+          hooks.onCountdown?.({ seconds: second });
         }
-        wheelRotation = start - elapsed * 0.0026;
+        wheelRotation = start + elapsed * 0.0013;
       } else {
         if (!closed) {
           closed = true;
-          hooks.onPhase?.({ phase:'bets-closed' });
-          hooks.onBetsClosed?.({ resultPending:true });
-          hooks.onPhase?.({ phase:'descending' });
+          hooks.onBetsClosed?.({ resultPending: true });
+          hooks.onPhase?.({ phase: 'descending' });
         }
         const progress = clamp01((elapsed - bettingDuration) / descentDuration);
         const target = -index * arc;
-        const remaining = shortestAngle(wheelRotation, target);
-        wheelRotation += remaining * Math.min(1, 0.035 + progress * 0.08);
+        wheelRotation += shortestAngle(wheelRotation, target) * Math.min(1, 0.03 + progress * 0.10);
       }
       drawWheel(wheelRotation);
       if (elapsed < totalDuration) requestAnimationFrame(frame);
       else {
         wheelRotation = -index * arc;
         drawWheel(wheelRotation);
-        hooks.onPhase?.({ phase:'settling' });
+        hooks.onPhase?.({ phase: 'settling' });
         resolve();
       }
     }
@@ -503,22 +512,21 @@ function animateToResult(result, hooks = {}) {
   });
 }
 
-async function spinOnce() {
-  if (spinning || !validateInputs()) return;
-  if (state.spins === 0 && state.startingBankroll !== Number(els.startingBankroll.value)) resetSimulation(false);
+function prepareNewRound() {
+  currentBets.clear();
+  betActionStack = [];
+  lockedBets = [];
+  renderBetSlip();
+  buildBetBoard();
+}
 
-  const launchBet = captureBetSnapshot();
-  if (!isValidBetSnapshot(launchBet)) {
-    setStatus(state.bankroll < launchBet.wager ? t('insufficient') : t('invalidInput'));
-    return;
-  }
-
-  pendingBet = launchBet;
-  lockedBet = null;
-  spinning = true;
-  toggleButtons(true);
-  setBettingEnabled(true);
-  updateRoundPhase('betting-open', 7);
+async function playAutomaticRound() {
+  if (roundInProgress || !autoEnabled) return;
+  roundInProgress = true;
+  prepareNewRound();
+  els.wheelType.disabled = true;
+  els.startingBankroll.disabled = true;
+  els.batchButton.disabled = true;
   setStatus(t('spinning'));
 
   const result = randomResult();
@@ -528,13 +536,13 @@ async function spinOnce() {
       setStatus(`${t('betsCloseIn')}: ${seconds}`);
     },
     onBetsClosed: () => {
-      lockedBet = isValidBetSnapshot(pendingBet) ? { ...pendingBet } : { ...launchBet };
-      setBettingEnabled(false);
+      lockedBets = cloneBets([...currentBets.values()]);
       updateRoundPhase('bets-closed');
       setStatus(t('noMoreBets'));
     },
     onPhase: ({ phase }) => {
-      if (phase === 'descending') {
+      if (phase === 'betting-open') updateRoundPhase('betting-open', 9);
+      else if (phase === 'descending') {
         updateRoundPhase('descending');
         setStatus(t('descending'));
       } else if (phase === 'settling') {
@@ -544,171 +552,366 @@ async function spinOnce() {
     }
   });
 
-  if (!lockedBet) lockedBet = isValidBetSnapshot(pendingBet) ? { ...pendingBet } : { ...launchBet };
-  const won = settle(result, lockedBet);
-  updateAll(result, won);
+  if (!lockedBets.length && currentBets.size) lockedBets = cloneBets([...currentBets.values()]);
+  const settlement = settleRound(result, lockedBets);
+  if (lockedBets.length) lastBets = cloneBets(lockedBets);
+  updateAll(result, settlement);
   updateRoundPhase('resolved');
-  if (rouletteScene?.ready) await rouletteScene.resolveResult(won, result);
+  if (rouletteScene?.ready) await rouletteScene.resolveResult(settlement.net, result);
 
-  spinning = false;
-  pendingBet = null;
-  lockedBet = null;
-  toggleButtons(false);
-  setBettingEnabled(true);
-  updateRoundPhase('idle');
-  setStatus('');
+  roundInProgress = false;
+  els.batchButton.disabled = false;
+  if (!autoEnabled) {
+    els.wheelType.disabled = false;
+    els.startingBankroll.disabled = false;
+    updateRoundPhase('paused');
+    setStatus(t('paused'));
+  } else {
+    setStatus(t('resultHold'));
+  }
+  updatePauseButton();
+}
+
+async function ensureAutoLoop() {
+  if (loopActive) return;
+  loopActive = true;
+  await sleep(900);
+  while (true) {
+    if (!autoEnabled || roundInProgress) {
+      await sleep(160);
+      continue;
+    }
+    await playAutomaticRound();
+    if (autoEnabled) await sleep(2400);
+  }
+}
+
+function toggleAuto() {
+  autoEnabled = !autoEnabled;
+  if (!autoEnabled) {
+    if (roundInProgress) setStatus(t('pausePending'));
+    else {
+      updateRoundPhase('paused');
+      els.wheelType.disabled = false;
+      els.startingBankroll.disabled = false;
+      setStatus(t('paused'));
+    }
+  } else {
+    els.wheelType.disabled = true;
+    els.startingBankroll.disabled = true;
+    setStatus(t('readyToLaunch'));
+    ensureAutoLoop();
+  }
+  updatePauseButton();
+}
+
+function updatePauseButton() {
+  els.pauseButton.textContent = autoEnabled ? t('pauseAfterRound') : t('resumeAuto');
 }
 
 function runBatch() {
-  if (spinning || !validateInputs()) return;
-  if (state.spins === 0 && state.startingBankroll !== Number(els.startingBankroll.value)) resetSimulation(false);
-  const batchBet = captureBetSnapshot();
-  if (!isValidBetSnapshot(batchBet)) {
-    setStatus(state.bankroll < batchBet.wager ? t('insufficient') : t('invalidInput'));
-    return;
-  }
+  if (roundInProgress) return;
+  if (!lastBets.length) return setStatus(t('noBatchBets'));
+  autoEnabled = false;
+  updatePauseButton();
+  updateRoundPhase('paused');
 
   const count = Number(els.batchSize.value);
-  let last = null;
-  let won = false;
+  const bets = cloneBets(lastBets);
+  const stake = totalFor(bets);
+  let lastResult = null;
+  let lastSettlement = null;
   let completed = 0;
-  spinning = true;
-  toggleButtons(true);
-  setBettingEnabled(false);
-  updateRoundPhase('settling');
-  setStatus(t('spinning'));
-
-  requestAnimationFrame(() => {
-    for (let i = 0; i < count; i++) {
-      if (state.bankroll < batchBet.wager) break;
-      last = randomResult();
-      won = settle(last, batchBet);
-      completed += 1;
-    }
-    if (last) {
-      const index = currentOrder().indexOf(last);
-      wheelRotation = -index * (Math.PI * 2 / currentOrder().length);
-      drawWheel();
-      rouletteScene?.setResult(last);
-      updateAll(last, won);
-    }
-    setStatus(completed < count ? t('batchStopped') : t('batchDone'));
-    spinning = false;
-    toggleButtons(false);
-    setBettingEnabled(true);
-    updateRoundPhase('idle');
-  });
-}
-
-function updateAll(result, won) {
-  updateResult(result,won); renderHistory(); updateMetrics(); drawChart();
-}
-function updateResult(result,won) {
-  const c=colorOf(result);
-  els.resultBadge.textContent=result;
-  els.resultBadge.className=`result-badge result-${c}`;
-  els.lastResultText.textContent=result;
-  els.lastOutcomeText.textContent=won?t('win'):t('loss');
-  els.lastOutcomeText.className=won?'outcome-win':'outcome-loss';
-  if (els.cinematicResult) {
-    els.cinematicResultLabel.textContent = won ? t('wonBanner') : t('lostBanner');
-    els.cinematicResultNumber.textContent = result;
-    els.cinematicResult.className = `cinematic-result is-visible ${won ? 'is-win' : 'is-loss'}`;
-    window.clearTimeout(updateResult.overlayTimer);
-    updateResult.overlayTimer = window.setTimeout(() => { els.cinematicResult.className = 'cinematic-result'; }, 1900);
+  for (let index = 0; index < count; index++) {
+    if (stake > state.bankroll) break;
+    lastResult = randomResult();
+    lastSettlement = settleRound(lastResult, bets);
+    completed += 1;
   }
+  if (lastResult) {
+    rouletteScene?.setResult(lastResult);
+    updateAll(lastResult, lastSettlement);
+  }
+  setStatus(completed < count ? t('batchStopped') : t('batchDone'));
+  els.wheelType.disabled = false;
+  els.startingBankroll.disabled = false;
 }
-function updateLastResult() {
-  if(!state.history.length){ els.lastResultText.textContent='—'; els.lastOutcomeText.textContent=t('noResult'); els.lastOutcomeText.className=''; return; }
-  const h=state.history[0]; updateResult(h.result,h.won);
-}
-function renderHistory() {
-  els.historyStrip.innerHTML='';
-  state.history.forEach(h=>{
-    const span=document.createElement('span'); span.className=`history-chip result-${colorOf(h.result)}`; span.textContent=h.result; span.title=h.won?t('win'):t('loss'); els.historyStrip.append(span);
-  });
-}
-function updateMetrics() {
-  const profit=state.bankroll-state.startingBankroll;
-  const expected=-state.wagered*houseEdge();
-  const rtp=state.wagered?state.returned/state.wagered:null;
-  els.bankrollMetric.textContent=formatMoney(state.bankroll);
-  els.spinsMetric.textContent=formatNumber(state.spins);
-  els.wageredMetric.textContent=formatMoney(state.wagered);
-  els.profitMetric.textContent=formatMoney(profit);
-  els.profitMetric.className=profit>0?'outcome-win':profit<0?'outcome-loss':'';
-  els.expectedMetric.textContent=formatMoney(expected);
-  els.expectedMetric.className='outcome-loss';
-  els.returnMetric.textContent=rtp===null?'—':formatPercent(rtp,2);
-}
-function resetSimulation(showMessage=true) {
-  if(!validateInputs()) return;
-  const starting=Number(els.startingBankroll.value);
-  state={startingBankroll:starting,bankroll:starting,spins:0,wagered:0,returned:0,history:[],chart:[{x:0,actual:0,expected:0}]};
-  wheelRotation=0;
-  pendingBet=null;
-  lockedBet=null;
-  roundPhase='idle';
+
+function resetSimulation(showMessage = true) {
+  if (roundInProgress) return setStatus(t('resetWait'));
+  autoEnabled = false;
+  state = freshState();
+  currentBets.clear();
+  betActionStack = [];
+  lockedBets = [];
+  lastBets = [];
+  wheelRotation = 0;
   rouletteScene?.reset();
-  if (els.cinematicResult) els.cinematicResult.className = 'cinematic-result';
-  els.resultBadge.textContent='—'; els.resultBadge.className='result-badge result-green';
-  renderHistory(); updateLastResult(); updateMetrics(); drawWheel(); drawChart();
-  setBettingEnabled(true);
-  updateRoundPhase('idle');
-  if(showMessage)setStatus(t('resetDone'));
-}
-function setStatus(msg){ els.statusMessage.textContent=msg; }
-function toggleButtons(disabled){
-  [els.spinButton, els.batchButton, els.resetButton, els.wheelType, els.startingBankroll, els.batchSize].forEach(control => { if (control) control.disabled = disabled; });
+  els.resultBadge.textContent = '—';
+  els.resultBadge.className = 'result-badge result-green';
+  els.lastResultText.textContent = '—';
+  els.lastOutcomeText.textContent = '—';
+  els.lastOutcomeText.className = '';
+  els.cinematicResult.className = 'cinematic-result';
+  updateRoundPhase('paused');
+  updateAll();
+  buildBetBoard();
+  renderBetSlip();
+  updatePauseButton();
+  els.wheelType.disabled = false;
+  els.startingBankroll.disabled = false;
+  if (showMessage) setStatus(t('resetDone'));
 }
 
-function initialize3D() {
-  if (!els.roulette3D) return;
-  rouletteScene = new RouletteScene(els.roulette3D, { order: currentOrder() });
-  rouletteScene.init();
-  rouletteScene.setSound(els.soundToggle?.checked !== false);
-  els.roulette3D.addEventListener('roulette-pocket-select', event => {
-    setBetSelection('straight', event.detail.number);
-    els.betAmount.focus({ preventScroll: true });
+function updateAll(result = null, settlement = null) {
+  if (result !== null && settlement) updateResult(result, settlement);
+  renderHistory();
+  updateMetrics();
+  drawChart();
+  renderBetSlip();
+}
+
+function updateResult(result, settlement) {
+  const color = colorOf(result);
+  els.resultBadge.textContent = result;
+  els.resultBadge.className = `result-badge result-${color}`;
+  els.lastResultText.textContent = result;
+
+  if (settlement.stake === 0) {
+    els.lastOutcomeText.textContent = t('watchedOnly');
+    els.lastOutcomeText.className = '';
+  } else if (settlement.net > 0) {
+    els.lastOutcomeText.textContent = `${t('netWin')} ${signedMoney(settlement.net)}`;
+    els.lastOutcomeText.className = 'outcome-win';
+  } else if (settlement.net < 0) {
+    els.lastOutcomeText.textContent = `${t('netLoss')} ${formatMoney(Math.abs(settlement.net))}`;
+    els.lastOutcomeText.className = 'outcome-loss';
+  } else {
+    els.lastOutcomeText.textContent = t('push');
+    els.lastOutcomeText.className = '';
+  }
+
+  const label = settlement.stake === 0 ? t('watchedOnly') : settlement.net > 0 ? t('wonBanner') : settlement.net < 0 ? t('lostBanner') : t('push');
+  els.cinematicResultLabel.textContent = label;
+  els.cinematicResultNumber.textContent = result;
+  const resultClass = settlement.net > 0 ? 'is-win' : settlement.net < 0 ? 'is-loss' : 'is-push';
+  els.cinematicResult.className = `cinematic-result is-visible ${resultClass}`;
+  window.clearTimeout(updateResult.timer);
+  updateResult.timer = window.setTimeout(() => { els.cinematicResult.className = 'cinematic-result'; }, 1900);
+}
+
+function updateLastResult() {
+  const latest = state.history[0];
+  if (!latest) return;
+  const settlement = { net: latest.net, stake: latest.stake };
+  updateResult(latest.result, settlement);
+}
+
+function renderHistory() {
+  els.historyStrip.innerHTML = '';
+  state.history.forEach(item => {
+    const chip = document.createElement('span');
+    chip.className = `history-chip result-${colorOf(item.result)}`;
+    chip.textContent = item.result;
+    chip.title = item.stake === 0 ? t('watchedOnly') : signedMoney(item.net);
+    els.historyStrip.append(chip);
   });
 }
 
-function setQuickChip(value) {
-  if (['bets-closed','descending','settling'].includes(roundPhase)) return;
-  const amount = Number(value);
-  if (!Number.isFinite(amount) || amount <= 0) return;
-  els.betAmount.value = String(amount);
-  document.querySelectorAll('[data-chip]').forEach(button => button.classList.toggle('is-active', Number(button.dataset.chip) === amount));
-  updateBetSummary();
-  refreshPendingBet();
+function updateMetrics() {
+  els.bankrollMetric.textContent = formatMoney(state.bankroll);
+  els.spinsMetric.textContent = formatNumber(state.spins);
+  els.wageredMetric.textContent = formatMoney(state.wagered);
+  els.profitMetric.textContent = signedMoney(state.bankroll - state.startingBankroll);
+  els.expectedMetric.textContent = formatMoney(-state.wagered * houseEdge());
+  els.returnMetric.textContent = state.wagered > 0 ? formatPercent(state.returned / state.wagered, 2) : '—';
 }
 
-els.languageSelect.value=lang;
-els.languageSelect.addEventListener('change',()=>{lang=els.languageSelect.value;applyLanguage();});
-els.wheelType.addEventListener('change',()=>{
-  updateNumberOptions();
-  buildBetBoard();
-  updateBetSummary();
-  rouletteScene?.setOrder(currentOrder());
-  resetSimulation(false);
-});
-els.betType.addEventListener('change',()=>{updateNumberOptions();updateBetSummary();buildBetBoard();refreshPendingBet();});
-els.straightNumber.addEventListener('change',()=>{updateBetSummary();buildBetBoard();refreshPendingBet();});
-els.betAmount.addEventListener('input',()=>{
-  updateBetSummary();
-  document.querySelectorAll('[data-chip]').forEach(button => button.classList.toggle('is-active', Number(button.dataset.chip) === Number(els.betAmount.value)));
-  refreshPendingBet();
-});
-els.startingBankroll.addEventListener('change',()=>{if(state.spins===0)resetSimulation(false);});
-els.spinButton.addEventListener('click',spinOnce);
-els.batchButton.addEventListener('click',runBatch);
-els.resetButton.addEventListener('click',()=>resetSimulation(true));
-els.soundToggle?.addEventListener('change',()=>rouletteScene?.setSound(els.soundToggle.checked));
-document.querySelectorAll('[data-chip]').forEach(button => button.addEventListener('click',()=>setQuickChip(button.dataset.chip)));
-window.addEventListener('resize',()=>{drawWheel();drawChart();rouletteScene?.resize();});
-window.addEventListener('beforeunload',()=>rouletteScene?.dispose());
+function drawWheel(rotation = wheelRotation) {
+  const canvas = els.wheelCanvas;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const cssSize = Math.max(300, canvas.getBoundingClientRect().width || 610);
+  canvas.width = Math.round(cssSize * dpr);
+  canvas.height = Math.round(cssSize * dpr);
+  wheelCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const size = cssSize;
+  const center = size / 2;
+  const outer = size * 0.46;
+  const inner = size * 0.30;
+  const order = currentOrder();
+  const arc = TAU / order.length;
 
-initialize3D();
+  wheelCtx.clearRect(0, 0, size, size);
+  wheelCtx.save();
+  wheelCtx.translate(center, center);
+  wheelCtx.beginPath();
+  wheelCtx.arc(0, 0, outer * 1.06, 0, TAU);
+  wheelCtx.fillStyle = '#8d5d24';
+  wheelCtx.fill();
+  wheelCtx.rotate(rotation);
+
+  order.forEach((number, index) => {
+    const start = -Math.PI / 2 + index * arc - arc / 2;
+    wheelCtx.beginPath();
+    wheelCtx.arc(0, 0, outer, start, start + arc);
+    wheelCtx.arc(0, 0, inner, start + arc, start, true);
+    wheelCtx.closePath();
+    wheelCtx.fillStyle = colorOf(number) === 'red' ? '#b62635' : colorOf(number) === 'green' ? '#087a50' : '#10151d';
+    wheelCtx.fill();
+    wheelCtx.strokeStyle = '#d6ab53';
+    wheelCtx.lineWidth = 1;
+    wheelCtx.stroke();
+
+    wheelCtx.save();
+    wheelCtx.rotate(start + arc / 2);
+    wheelCtx.translate((outer + inner) / 2, 0);
+    wheelCtx.rotate(Math.PI / 2);
+    wheelCtx.fillStyle = '#fff';
+    wheelCtx.font = `800 ${Math.max(10, size * 0.022)}px Arial`;
+    wheelCtx.textAlign = 'center';
+    wheelCtx.textBaseline = 'middle';
+    wheelCtx.fillText(number, 0, 0);
+    wheelCtx.restore();
+  });
+
+  wheelCtx.beginPath();
+  wheelCtx.arc(0, 0, inner * 0.88, 0, TAU);
+  wheelCtx.fillStyle = '#173650';
+  wheelCtx.fill();
+  wheelCtx.beginPath();
+  wheelCtx.arc(0, 0, size * 0.075, 0, TAU);
+  wheelCtx.fillStyle = '#d7aa4f';
+  wheelCtx.fill();
+  wheelCtx.restore();
+}
+
+function drawChart() {
+  const canvas = els.profitChart;
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.max(600, rect.width || 1100);
+  const height = 290;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  chartCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  chartCtx.clearRect(0, 0, width, height);
+
+  const points = downsample(state.chart, 450);
+  const padding = { left: 58, right: 18, top: 18, bottom: 34 };
+  const values = points.flatMap(point => [point.actual, point.expected, 0]);
+  let min = Math.min(...values);
+  let max = Math.max(...values);
+  if (min === max) { min -= 1; max += 1; }
+  const xMax = Math.max(1, points.at(-1)?.x || 1);
+  const x = value => padding.left + (value / xMax) * (width - padding.left - padding.right);
+  const y = value => padding.top + (max - value) / (max - min) * (height - padding.top - padding.bottom);
+
+  chartCtx.strokeStyle = 'rgba(255,255,255,.10)';
+  chartCtx.lineWidth = 1;
+  for (let index = 0; index <= 4; index++) {
+    const yy = padding.top + index * (height - padding.top - padding.bottom) / 4;
+    chartCtx.beginPath(); chartCtx.moveTo(padding.left, yy); chartCtx.lineTo(width - padding.right, yy); chartCtx.stroke();
+  }
+  chartCtx.beginPath(); chartCtx.moveTo(padding.left, y(0)); chartCtx.lineTo(width - padding.right, y(0));
+  chartCtx.strokeStyle = 'rgba(255,255,255,.28)'; chartCtx.stroke();
+
+  drawChartLine(points, 'actual', '#7aa7ff', [], 2.2, x, y);
+  drawChartLine(points, 'expected', '#ff6b76', [6, 5], 1.8, x, y);
+
+  chartCtx.fillStyle = 'rgba(210,222,240,.75)';
+  chartCtx.font = '12px system-ui';
+  chartCtx.textAlign = 'right';
+  chartCtx.fillText(formatMoney(max), padding.left - 8, padding.top + 4);
+  chartCtx.fillText(formatMoney(min), padding.left - 8, height - padding.bottom);
+  chartCtx.textAlign = 'center';
+  chartCtx.fillText(formatNumber(xMax), width - padding.right, height - 10);
+}
+
+function drawChartLine(points, key, color, dash, lineWidth, x, y) {
+  chartCtx.save();
+  chartCtx.beginPath();
+  points.forEach((point, index) => {
+    const xx = x(point.x);
+    const yy = y(point[key]);
+    if (index) chartCtx.lineTo(xx, yy); else chartCtx.moveTo(xx, yy);
+  });
+  chartCtx.strokeStyle = color;
+  chartCtx.lineWidth = lineWidth;
+  chartCtx.setLineDash(dash);
+  chartCtx.stroke();
+  chartCtx.restore();
+}
+
+function downsample(array, maxPoints) {
+  if (array.length <= maxPoints) return array;
+  const step = (array.length - 1) / (maxPoints - 1);
+  return Array.from({ length: maxPoints }, (_, index) => array[Math.round(index * step)]);
+}
+
+function clamp01(value) { return Math.min(1, Math.max(0, value)); }
+function normalizeAngle(angle) { return ((angle % TAU) + TAU) % TAU; }
+function shortestAngle(from, to) {
+  let delta = normalizeAngle(to) - normalizeAngle(from);
+  if (delta > Math.PI) delta -= TAU;
+  if (delta < -Math.PI) delta += TAU;
+  return delta;
+}
+
+els.languageSelect.value = lang;
+els.languageSelect.addEventListener('change', event => { lang = event.target.value; applyLanguage(); });
+
+document.querySelectorAll('[data-chip]').forEach(button => {
+  button.addEventListener('click', () => {
+    selectedChip = Number(button.dataset.chip);
+    document.querySelectorAll('[data-chip]').forEach(chip => chip.classList.toggle('is-active', chip === button));
+    renderBetSlip();
+  });
+});
+
+els.undoBetButton.addEventListener('click', undoBet);
+els.clearBetsButton.addEventListener('click', clearBets);
+els.repeatBetsButton.addEventListener('click', repeatLastBets);
+els.pauseButton.addEventListener('click', toggleAuto);
+els.batchButton.addEventListener('click', runBatch);
+els.resetButton.addEventListener('click', () => resetSimulation(true));
+els.resetButtonSecondary.addEventListener('click', () => resetSimulation(true));
+els.soundToggle.addEventListener('change', () => rouletteScene?.setSound(els.soundToggle.checked));
+els.startingBankroll.addEventListener('change', () => { if (!roundInProgress && state.spins === 0) resetSimulation(false); });
+els.wheelType.addEventListener('change', () => {
+  if (roundInProgress || autoEnabled) {
+    setStatus(t('wheelChangePaused'));
+    return;
+  }
+  currentBets.clear();
+  betActionStack = [];
+  lastBets = [];
+  rouletteScene?.setOrder(currentOrder());
+  buildBetBoard();
+  renderBetSlip();
+  drawWheel();
+  updateMetrics();
+});
+
+window.addEventListener('resize', () => { drawWheel(); drawChart(); });
+
+rouletteScene = new RouletteScene(els.roulette3D, {
+  order: currentOrder(),
+  onPocketClick: number => placeBet('straight', String(number))
+});
+rouletteScene.init();
+rouletteScene.setSound(els.soundToggle.checked);
+
 applyLanguage();
-resetSimulation(false);
-window.__rouletteLab = { spinOnce, runBatch, resetSimulation, getState:()=>structuredClone(state), scene:()=>rouletteScene };
+updateRoundPhase('idle');
+updateAll();
+ensureAutoLoop();
+
+window.__rouletteLab = {
+  getState: () => structuredClone(state),
+  getBets: () => cloneBets([...currentBets.values()]),
+  placeBet,
+  undoBet,
+  clearBets,
+  toggleAuto,
+  scene: () => rouletteScene
+};

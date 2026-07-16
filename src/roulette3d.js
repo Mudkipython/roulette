@@ -1,20 +1,20 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 const TAU = Math.PI * 2;
-const BALL_RADIUS = 0.19;
-const OUTER_TRACK_RADIUS = 5.96;
-const LAUNCH_RADIUS = 6.38;
-const POCKET_RADIUS = 4.57;
+const BALL_RADIUS = 0.18;
+const OUTER_TRACK_RADIUS = 6.02;
+const POCKET_RADIUS = 4.47;
+const OUTER_TRACK_Y = 1.34;
+const POCKET_BALL_Y = 0.74;
 const RED_NUMBERS = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
 
 function clamp01(value) { return Math.min(1, Math.max(0, value)); }
 function lerp(a, b, t) { return a + (b - a) * t; }
-function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2; }
+function smoothstep(t) { const x = clamp01(t); return x * x * (3 - 2 * x); }
+function easeOutCubic(t) { return 1 - Math.pow(1 - clamp01(t), 3); }
 function normalizeAngle(angle) { return ((angle % TAU) + TAU) % TAU; }
 function shortestAngle(from, to) {
   let delta = normalizeAngle(to) - normalizeAngle(from);
@@ -23,15 +23,15 @@ function shortestAngle(from, to) {
   return delta;
 }
 function pocketColor(number) {
-  if (number === '0' || number === '00') return 0x0d9d66;
-  return RED_NUMBERS.has(number) ? 0xc93643 : 0x151b25;
+  if (number === '0' || number === '00') return 0x087a50;
+  return RED_NUMBERS.has(number) ? 0xb62635 : 0x10151d;
 }
 
 class CasinoAudio {
   constructor() {
     this.context = null;
     this.enabled = true;
-    this.lastRailTick = 0;
+    this.lastTick = 0;
   }
   setEnabled(enabled) { this.enabled = Boolean(enabled); }
   ensure() {
@@ -40,7 +40,7 @@ class CasinoAudio {
     if (this.context.state === 'suspended') this.context.resume();
     return this.context;
   }
-  tone(frequency, duration = 0.05, volume = 0.02, type = 'sine', delay = 0) {
+  tone(frequency, duration = 0.05, volume = 0.015, type = 'sine', delay = 0) {
     const ctx = this.ensure();
     if (!ctx) return;
     const start = ctx.currentTime + delay;
@@ -53,37 +53,38 @@ class CasinoAudio {
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain).connect(ctx.destination);
     oscillator.start(start);
-    oscillator.stop(start + duration + 0.02);
+    oscillator.stop(start + duration + 0.03);
   }
   launch() {
-    this.tone(145, 0.14, 0.045, 'sawtooth');
-    this.tone(310, 0.10, 0.025, 'triangle', 0.06);
+    this.tone(165, 0.11, 0.025, 'sawtooth');
+    this.tone(390, 0.08, 0.014, 'triangle', 0.05);
   }
-  rail(speed) {
+  rolling(speed) {
     const now = performance.now();
-    const interval = Math.max(38, 130 - speed * 10);
-    if (now - this.lastRailTick < interval) return;
-    this.lastRailTick = now;
-    this.tone(680 + speed * 70, 0.018, 0.007, 'square');
+    const interval = Math.max(42, 145 - speed * 10);
+    if (now - this.lastTick < interval) return;
+    this.lastTick = now;
+    this.tone(590 + speed * 55, 0.014, 0.0045, 'square');
   }
   deflector() {
-    this.tone(1220, 0.025, 0.025, 'square');
-    this.tone(760, 0.045, 0.018, 'triangle', 0.012);
+    this.tone(1040, 0.024, 0.019, 'square');
+    this.tone(630, 0.04, 0.012, 'triangle', 0.012);
   }
   pocket() {
-    this.tone(520, 0.05, 0.025, 'triangle');
-    this.tone(340, 0.08, 0.02, 'sine', 0.035);
+    this.tone(480, 0.05, 0.02, 'triangle');
+    this.tone(305, 0.09, 0.014, 'sine', 0.035);
   }
   win() {
-    [523.25, 659.25, 783.99].forEach((frequency, index) => this.tone(frequency, 0.28, 0.035, 'sine', index * 0.08));
+    [523.25, 659.25, 783.99].forEach((frequency, index) => this.tone(frequency, 0.22, 0.025, 'sine', index * 0.075));
   }
-  lose() { this.tone(210, 0.18, 0.025, 'triangle'); }
+  lose() { this.tone(190, 0.16, 0.018, 'triangle'); }
 }
 
 export class RouletteScene {
   constructor(container, options = {}) {
     this.container = container;
     this.order = [...(options.order || [])];
+    this.onPocketClick = options.onPocketClick || null;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.audio = new CasinoAudio();
     this.ready = false;
@@ -92,55 +93,40 @@ export class RouletteScene {
     this.phase = 'idle';
     this.rotorAngle = 0;
     this.wheelOmega = 0;
-    this.ballAngle = 0.18;
+    this.ballAngle = 0.15;
     this.ballAngularVelocity = 0;
-    this.ballRadius = LAUNCH_RADIUS;
-    this.ballHeight = 1.22;
-    this.ballRadialVelocity = 0;
-    this.ballBounceHeight = 0;
-    this.ballBounceVelocity = 0;
+    this.ballRadius = OUTER_TRACK_RADIUS;
+    this.ballHeight = OUTER_TRACK_Y;
     this.spinState = null;
     this.lastCountdown = null;
-    this.homeCamera = new THREE.Vector3(0, 9.7, 11.6);
-    this.homeTarget = new THREE.Vector3(0, 0.72, 0);
-    this.launchAngle = 0.16;
-    this.clock = new THREE.Clock();
-    this.confetti = [];
-    this.pulses = [];
     this.pointer = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
     this.hoveredPocket = null;
+    this.confetti = [];
+    this.pulses = [];
   }
 
   init() {
     try {
       this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      this.renderer.setSize(Math.max(1, this.container.clientWidth), Math.max(1, this.container.clientHeight), false);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
       this.renderer.outputColorSpace = THREE.SRGBColorSpace;
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      this.renderer.toneMappingExposure = 1.05;
+      this.renderer.toneMappingExposure = 1.04;
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      this.renderer.domElement.setAttribute('aria-label', 'Interactive 3D roulette wheel');
       this.renderer.domElement.className = 'roulette-webgl-canvas';
+      this.renderer.domElement.setAttribute('aria-label', 'Fixed-view 3D roulette wheel');
       this.container.appendChild(this.renderer.domElement);
 
       this.scene = new THREE.Scene();
-      this.scene.background = new THREE.Color(0x06101c);
-      this.scene.fog = new THREE.FogExp2(0x06101c, 0.024);
+      this.scene.background = new THREE.Color(0x06101b);
+      this.scene.fog = new THREE.FogExp2(0x06101b, 0.022);
 
-      this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 80);
-      this.camera.position.copy(this.homeCamera);
-      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-      this.controls.enableDamping = true;
-      this.controls.dampingFactor = 0.055;
-      this.controls.enablePan = false;
-      this.controls.minDistance = 9;
-      this.controls.maxDistance = 16;
-      this.controls.minPolarAngle = 0.42;
-      this.controls.maxPolarAngle = 1.18;
-      this.controls.target.copy(this.homeTarget);
+      // A single fixed camera. It is never animated, damped or shaken.
+      this.camera = new THREE.PerspectiveCamera(35, 1, 0.1, 80);
+      this.camera.position.set(0, 12.9, 9.3);
+      this.camera.lookAt(0, 0.82, 0);
 
       this.buildLighting();
       this.buildEnvironment();
@@ -165,10 +151,10 @@ export class RouletteScene {
   }
 
   buildLighting() {
-    this.scene.add(new THREE.HemisphereLight(0xbcdcff, 0x190b05, 1.65));
+    this.scene.add(new THREE.HemisphereLight(0xc7ddff, 0x1d0c06, 1.7));
 
-    const key = new THREE.DirectionalLight(0xffe0ac, 3.25);
-    key.position.set(7, 13, 8);
+    const key = new THREE.DirectionalLight(0xffdfaa, 3.1);
+    key.position.set(7, 14, 7);
     key.castShadow = true;
     key.shadow.mapSize.set(1536, 1536);
     key.shadow.camera.left = -9;
@@ -177,19 +163,19 @@ export class RouletteScene {
     key.shadow.camera.bottom = -9;
     this.scene.add(key);
 
-    const cool = new THREE.PointLight(0x5fc8ff, 42, 24, 2);
-    cool.position.set(-6, 5.5, -4);
-    this.scene.add(cool);
+    const fill = new THREE.PointLight(0x55bfff, 33, 24, 2);
+    fill.position.set(-6, 6, -5);
+    this.scene.add(fill);
 
-    this.resultLight = new THREE.PointLight(0xffc861, 0, 14, 2);
-    this.resultLight.position.set(0, 4.2, 0);
+    this.resultLight = new THREE.PointLight(0xffc95f, 0, 14, 2);
+    this.resultLight.position.set(0, 4.4, 0);
     this.scene.add(this.resultLight);
   }
 
   buildEnvironment() {
     const floor = new THREE.Mesh(
-      new THREE.CircleGeometry(24, 96),
-      new THREE.MeshStandardMaterial({ color: 0x071b19, roughness: 0.94, metalness: 0.01 })
+      new THREE.CircleGeometry(25, 96),
+      new THREE.MeshStandardMaterial({ color: 0x071b18, roughness: 0.96, metalness: 0.01 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -0.03;
@@ -198,7 +184,7 @@ export class RouletteScene {
 
     const table = new THREE.Mesh(
       new THREE.CylinderGeometry(8.25, 8.65, 0.72, 96),
-      new THREE.MeshStandardMaterial({ color: 0x063d31, roughness: 0.74, metalness: 0.06 })
+      new THREE.MeshStandardMaterial({ color: 0x063a2f, roughness: 0.78, metalness: 0.05 })
     );
     table.position.y = 0.23;
     table.receiveShadow = true;
@@ -207,7 +193,7 @@ export class RouletteScene {
 
     const rim = new THREE.Mesh(
       new THREE.TorusGeometry(8.12, 0.18, 18, 128),
-      new THREE.MeshStandardMaterial({ color: 0x956124, roughness: 0.3, metalness: 0.62 })
+      new THREE.MeshStandardMaterial({ color: 0x9c6728, roughness: 0.3, metalness: 0.66 })
     );
     rim.rotation.x = Math.PI / 2;
     rim.position.y = 0.62;
@@ -220,11 +206,9 @@ export class RouletteScene {
       this.scene.remove(this.machineRoot);
       this.disposeObject(this.machineRoot);
     }
-
     this.machineRoot = new THREE.Group();
     this.machineRoot.position.y = 0.55;
     this.scene.add(this.machineRoot);
-
     this.buildStaticBowl();
     this.buildRotor();
     this.buildLauncher();
@@ -232,62 +216,53 @@ export class RouletteScene {
 
   buildStaticBowl() {
     const casing = new THREE.Mesh(
-      new THREE.CylinderGeometry(6.38, 6.5, 0.56, 128),
-      new THREE.MeshStandardMaterial({ color: 0x27150c, roughness: 0.24, metalness: 0.52 })
+      new THREE.CylinderGeometry(6.44, 6.56, 0.56, 128),
+      new THREE.MeshStandardMaterial({ color: 0x29170d, roughness: 0.26, metalness: 0.52 })
     );
     casing.castShadow = true;
     casing.receiveShadow = true;
     this.machineRoot.add(casing);
 
     const outerGold = new THREE.Mesh(
-      new THREE.TorusGeometry(6.18, 0.16, 20, 160),
-      new THREE.MeshStandardMaterial({ color: 0xd3a64b, roughness: 0.18, metalness: 0.9, emissive: 0x2b1500, emissiveIntensity: 0.18 })
+      new THREE.TorusGeometry(6.21, 0.16, 20, 160),
+      new THREE.MeshStandardMaterial({ color: 0xd4a54d, roughness: 0.18, metalness: 0.9, emissive: 0x2d1600, emissiveIntensity: 0.16 })
     );
     outerGold.rotation.x = Math.PI / 2;
-    outerGold.position.y = 0.45;
-    outerGold.castShadow = true;
+    outerGold.position.y = 0.47;
     this.machineRoot.add(outerGold);
 
     const track = new THREE.Mesh(
-      new THREE.TorusGeometry(OUTER_TRACK_RADIUS, 0.25, 22, 160),
-      new THREE.MeshStandardMaterial({ color: 0xc8b17e, roughness: 0.22, metalness: 0.72 })
+      new THREE.TorusGeometry(OUTER_TRACK_RADIUS, 0.24, 22, 160),
+      new THREE.MeshStandardMaterial({ color: 0xc8b17c, roughness: 0.23, metalness: 0.72 })
     );
     track.rotation.x = Math.PI / 2;
-    track.position.y = 1.02;
+    track.position.y = 1.13;
     track.castShadow = true;
     track.receiveShadow = true;
     this.machineRoot.add(track);
 
     const bowlPoints = [
-      new THREE.Vector2(3.58, 0.28),
-      new THREE.Vector2(4.30, 0.32),
-      new THREE.Vector2(4.90, 0.39),
-      new THREE.Vector2(5.38, 0.56),
-      new THREE.Vector2(5.72, 0.79),
-      new THREE.Vector2(5.93, 0.98)
+      new THREE.Vector2(3.55, 0.42),
+      new THREE.Vector2(4.35, 0.48),
+      new THREE.Vector2(4.92, 0.58),
+      new THREE.Vector2(5.40, 0.79),
+      new THREE.Vector2(5.78, 1.02),
+      new THREE.Vector2(5.98, 1.18)
     ];
     const bowl = new THREE.Mesh(
       new THREE.LatheGeometry(bowlPoints, 128),
-      new THREE.MeshStandardMaterial({ color: 0x9f875d, roughness: 0.3, metalness: 0.52, side: THREE.DoubleSide })
+      new THREE.MeshStandardMaterial({ color: 0xa28b61, roughness: 0.32, metalness: 0.5, side: THREE.DoubleSide })
     );
     bowl.castShadow = true;
     bowl.receiveShadow = true;
     this.machineRoot.add(bowl);
 
-    const innerLip = new THREE.Mesh(
-      new THREE.TorusGeometry(5.28, 0.07, 12, 128),
-      new THREE.MeshStandardMaterial({ color: 0xdeb65f, roughness: 0.19, metalness: 0.88 })
-    );
-    innerLip.rotation.x = Math.PI / 2;
-    innerLip.position.y = this.surfaceHeight(5.28) + 0.04;
-    this.machineRoot.add(innerLip);
-
     this.deflectorGroup = new THREE.Group();
-    const deflectorMaterial = new THREE.MeshStandardMaterial({ color: 0xd7ad58, roughness: 0.2, metalness: 0.86 });
+    const deflectorMaterial = new THREE.MeshStandardMaterial({ color: 0xdab25d, roughness: 0.2, metalness: 0.86 });
     for (let i = 0; i < 8; i++) {
       const angle = i * TAU / 8 + Math.PI / 8;
       const deflector = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.34, 4), deflectorMaterial);
-      const radius = i % 2 === 0 ? 5.22 : 5.08;
+      const radius = i % 2 === 0 ? 5.24 : 5.10;
       deflector.position.set(Math.cos(angle) * radius, this.surfaceHeight(radius) + 0.17, Math.sin(angle) * radius);
       deflector.rotation.y = -angle + Math.PI / 4;
       deflector.castShadow = true;
@@ -301,115 +276,118 @@ export class RouletteScene {
     this.machineRoot.add(this.rotorGroup);
 
     const rotorBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(5.18, 5.34, 0.48, 128),
-      new THREE.MeshStandardMaterial({ color: 0x1b2a40, roughness: 0.24, metalness: 0.58 })
+      new THREE.CylinderGeometry(5.18, 5.32, 0.46, 128),
+      new THREE.MeshStandardMaterial({ color: 0x18283b, roughness: 0.27, metalness: 0.57 })
     );
-    rotorBase.position.y = 0.37;
+    rotorBase.position.y = 0.32;
     rotorBase.castShadow = true;
     rotorBase.receiveShadow = true;
     this.rotorGroup.add(rotorBase);
 
     this.pocketsGroup = new THREE.Group();
-    this.pocketsGroup.position.y = 0.42;
+    this.pocketsGroup.position.y = 0.57;
     this.rotorGroup.add(this.pocketsGroup);
     this.pocketMeshes = [];
 
     const arc = TAU / this.order.length;
+    const separatorMaterial = new THREE.MeshStandardMaterial({ color: 0xe7bd62, roughness: 0.2, metalness: 0.88 });
+
     for (let i = 0; i < this.order.length; i++) {
       const center = this.baseAngle(i);
-      const geometry = this.createRingSectorGeometry(3.72, 5.06, center - arc * 0.475, center + arc * 0.475, 0.18);
       const number = this.order[i];
+      const geometry = this.createHorizontalSectorGeometry(3.82, 5.03, center - arc * 0.48, center + arc * 0.48);
       const material = new THREE.MeshStandardMaterial({
         color: pocketColor(number),
-        roughness: 0.4,
-        metalness: 0.22,
+        roughness: 0.42,
+        metalness: 0.2,
         emissive: pocketColor(number),
-        emissiveIntensity: 0.03
+        emissiveIntensity: 0.035,
+        side: THREE.DoubleSide
       });
       const pocket = new THREE.Mesh(geometry, material);
-      pocket.castShadow = true;
+      pocket.userData = { number, index: i, baseEmissive: 0.035 };
       pocket.receiveShadow = true;
-      pocket.userData = { number, index: i, baseEmissive: 0.03 };
       this.pocketsGroup.add(pocket);
       this.pocketMeshes.push(pocket);
 
       const label = this.createNumberLabel(number);
-      label.position.set(Math.cos(center) * 4.46, 0.23, Math.sin(center) * 4.46);
-      label.rotation.x = -Math.PI / 2;
-      label.rotation.z = -center + Math.PI / 2;
+      label.position.set(Math.cos(center) * 4.47, 0.055, Math.sin(center) * 4.47);
       this.pocketsGroup.add(label);
 
-      const separator = new THREE.Mesh(
-        new THREE.BoxGeometry(0.048, 0.27, 1.37),
-        new THREE.MeshStandardMaterial({ color: 0xe4bc63, roughness: 0.2, metalness: 0.86 })
-      );
-      separator.position.set(Math.cos(center - arc * 0.5) * 4.39, 0.22, Math.sin(center - arc * 0.5) * 4.39);
-      separator.rotation.y = -(center - arc * 0.5) + Math.PI / 2;
+      const boundary = center - arc * 0.5;
+      const separator = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.21, 1.23), separatorMaterial);
+      separator.position.set(Math.cos(boundary) * 4.42, 0.10, Math.sin(boundary) * 4.42);
+      separator.rotation.y = -boundary + Math.PI / 2;
       separator.castShadow = true;
       this.pocketsGroup.add(separator);
     }
 
+    const outerPocketWall = new THREE.Mesh(
+      new THREE.TorusGeometry(5.06, 0.075, 12, 160),
+      separatorMaterial
+    );
+    outerPocketWall.rotation.x = Math.PI / 2;
+    outerPocketWall.position.y = 0.12;
+    this.pocketsGroup.add(outerPocketWall);
+
+    const innerPocketWall = new THREE.Mesh(
+      new THREE.TorusGeometry(3.79, 0.07, 12, 160),
+      separatorMaterial
+    );
+    innerPocketWall.rotation.x = Math.PI / 2;
+    innerPocketWall.position.y = 0.12;
+    this.pocketsGroup.add(innerPocketWall);
+
     const innerCone = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.92, 3.68, 0.66, 96),
-      new THREE.MeshStandardMaterial({ color: 0x193653, roughness: 0.25, metalness: 0.55 })
+      new THREE.CylinderGeometry(0.92, 3.68, 0.68, 96),
+      new THREE.MeshStandardMaterial({ color: 0x183650, roughness: 0.25, metalness: 0.56 })
     );
     innerCone.position.y = 0.73;
     innerCone.castShadow = true;
     this.rotorGroup.add(innerCone);
 
-    const spokeMaterial = new THREE.MeshStandardMaterial({ color: 0x557da3, roughness: 0.24, metalness: 0.62 });
-    for (let i = 0; i < 12; i++) {
-      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.08, 3.0), spokeMaterial);
-      spoke.position.y = 1.08;
-      spoke.rotation.y = i * Math.PI / 6;
-      this.rotorGroup.add(spoke);
-    }
-
     const hub = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.9, 1.22, 0.78, 64),
-      new THREE.MeshStandardMaterial({ color: 0xd8aa4c, roughness: 0.17, metalness: 0.9, emissive: 0x2a1500, emissiveIntensity: 0.2 })
+      new THREE.CylinderGeometry(0.92, 1.22, 0.78, 64),
+      new THREE.MeshStandardMaterial({ color: 0xd9ab4f, roughness: 0.17, metalness: 0.9, emissive: 0x2c1600, emissiveIntensity: 0.18 })
     );
-    hub.position.y = 1.25;
+    hub.position.y = 1.24;
     hub.castShadow = true;
     this.rotorGroup.add(hub);
 
     const spindle = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.17, 1.85, 24),
-      new THREE.MeshStandardMaterial({ color: 0xffda82, roughness: 0.12, metalness: 0.96 })
+      new THREE.CylinderGeometry(0.12, 0.17, 1.75, 24),
+      new THREE.MeshStandardMaterial({ color: 0xffd982, roughness: 0.12, metalness: 0.96 })
     );
-    spindle.position.y = 2.2;
+    spindle.position.y = 2.16;
     this.rotorGroup.add(spindle);
 
     const cap = new THREE.Mesh(
-      new THREE.SphereGeometry(0.32, 28, 18),
+      new THREE.SphereGeometry(0.31, 28, 18),
       new THREE.MeshStandardMaterial({ color: 0xffd16a, roughness: 0.14, metalness: 0.92 })
     );
-    cap.position.y = 3.13;
+    cap.position.y = 3.04;
     this.rotorGroup.add(cap);
   }
 
   buildLauncher() {
     const launcher = new THREE.Group();
-    const angle = this.launchAngle;
-    const radial = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
-    const tangent = new THREE.Vector3(-Math.sin(angle), 0, Math.cos(angle));
-    launcher.position.copy(radial.clone().multiplyScalar(6.32));
-    launcher.position.y = 1.22;
+    const angle = 0.15;
+    launcher.position.set(Math.cos(angle) * 6.34, 1.28, Math.sin(angle) * 6.34);
     launcher.rotation.y = -angle;
 
     const body = new THREE.Mesh(
       new THREE.BoxGeometry(0.48, 0.38, 1.05),
-      new THREE.MeshStandardMaterial({ color: 0x202b3a, roughness: 0.26, metalness: 0.72 })
+      new THREE.MeshStandardMaterial({ color: 0x202b39, roughness: 0.27, metalness: 0.72 })
     );
     body.castShadow = true;
     launcher.add(body);
 
     const mouth = new THREE.Mesh(
       new THREE.CylinderGeometry(0.16, 0.19, 0.52, 28),
-      new THREE.MeshStandardMaterial({ color: 0xc3a466, roughness: 0.18, metalness: 0.82 })
+      new THREE.MeshStandardMaterial({ color: 0xc5a568, roughness: 0.18, metalness: 0.82 })
     );
     mouth.rotation.x = Math.PI / 2;
-    mouth.position.copy(tangent.clone().multiplyScalar(-0.48));
+    mouth.position.z = -0.49;
     launcher.add(mouth);
     this.machineRoot.add(launcher);
   }
@@ -418,46 +396,46 @@ export class RouletteScene {
     const material = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       roughness: 0.07,
-      metalness: 0.18,
+      metalness: 0.16,
       clearcoat: 1,
       clearcoatRoughness: 0.07,
-      emissive: 0xb8dcff,
-      emissiveIntensity: 0.055
+      emissive: 0xb7dcff,
+      emissiveIntensity: 0.05
     });
     this.ball = new THREE.Mesh(new THREE.SphereGeometry(BALL_RADIUS, 32, 22), material);
     this.ball.castShadow = true;
-    this.scene.add(this.ball);
+    this.machineRoot.add(this.ball);
 
     this.ballGlow = new THREE.Mesh(
-      new THREE.SphereGeometry(0.255, 24, 16),
-      new THREE.MeshBasicMaterial({ color: 0xaedfff, transparent: true, opacity: 0.09, blending: THREE.AdditiveBlending, depthWrite: false })
+      new THREE.SphereGeometry(0.25, 24, 16),
+      new THREE.MeshBasicMaterial({ color: 0xaedfff, transparent: true, opacity: 0.075, blending: THREE.AdditiveBlending, depthWrite: false })
     );
-    this.scene.add(this.ballGlow);
+    this.machineRoot.add(this.ballGlow);
     this.updateBallTransform();
   }
 
   buildPostProcessing() {
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.48, 0.38, 0.84);
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.38, 0.34, 0.86);
     this.composer.addPass(this.bloomPass);
   }
 
-  createRingSectorGeometry(innerRadius, outerRadius, startAngle, endAngle, depth) {
+  createHorizontalSectorGeometry(innerRadius, outerRadius, startAngle, endAngle) {
     const shape = new THREE.Shape();
-    const segments = 7;
+    const segments = 8;
     for (let i = 0; i <= segments; i++) {
       const angle = lerp(startAngle, endAngle, i / segments);
       const x = Math.cos(angle) * outerRadius;
-      const y = Math.sin(angle) * outerRadius;
+      const y = -Math.sin(angle) * outerRadius;
       if (i === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
     }
     for (let i = segments; i >= 0; i--) {
       const angle = lerp(startAngle, endAngle, i / segments);
-      shape.lineTo(Math.cos(angle) * innerRadius, Math.sin(angle) * innerRadius);
+      shape.lineTo(Math.cos(angle) * innerRadius, -Math.sin(angle) * innerRadius);
     }
     shape.closePath();
-    const geometry = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 1 });
+    const geometry = new THREE.ShapeGeometry(shape, 8);
     geometry.rotateX(-Math.PI / 2);
     geometry.computeVertexNormals();
     return geometry;
@@ -465,61 +443,69 @@ export class RouletteScene {
 
   createNumberLabel(number) {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
+    canvas.width = 128;
     canvas.height = 128;
-    const context = canvas.getContext('2d');
-    context.font = '900 78px Inter, Arial, sans-serif';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.lineWidth = 9;
-    context.strokeStyle = 'rgba(0,0,0,.55)';
-    context.strokeText(number, 128, 68);
-    context.fillStyle = '#fff';
-    context.fillText(number, 128, 68);
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 128, 128);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `900 ${String(number).length > 1 ? 46 : 54}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,.75)';
+    ctx.shadowBlur = 8;
+    ctx.fillText(String(number), 64, 66);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
-    return new THREE.Mesh(
-      new THREE.PlaneGeometry(0.67, 0.34),
-      new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, side: THREE.DoubleSide })
-    );
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: true }));
+    sprite.scale.set(0.64, 0.64, 0.64);
+    return sprite;
   }
 
   surfaceHeight(radius) {
-    if (radius >= 5.93) return 0.98;
-    if (radius >= 5.72) return lerp(0.79, 0.98, (radius - 5.72) / 0.21);
-    if (radius >= 5.38) return lerp(0.56, 0.79, (radius - 5.38) / 0.34);
-    if (radius >= 4.90) return lerp(0.39, 0.56, (radius - 4.90) / 0.48);
-    if (radius >= 4.30) return lerp(0.32, 0.39, (radius - 4.30) / 0.60);
-    return lerp(0.28, 0.32, clamp01((radius - 3.58) / 0.72));
+    if (radius >= 5.95) return 1.16;
+    if (radius <= 4.45) return 0.58;
+    const t = (radius - 4.45) / 1.5;
+    return lerp(0.58, 1.16, smoothstep(t));
   }
 
-  baseAngle(index) { return -Math.PI / 2 + index * (TAU / Math.max(1, this.order.length)); }
+  baseAngle(index) {
+    return Math.PI / 2 - index * TAU / this.order.length;
+  }
 
   bindPointerInteraction() {
-    this.renderer.domElement.addEventListener('pointermove', event => {
-      if (this.spinning) return;
-      const rect = this.renderer.domElement.getBoundingClientRect();
+    const canvas = this.renderer.domElement;
+    const updatePointer = event => {
+      const rect = canvas.getBoundingClientRect();
       this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
       this.raycaster.setFromCamera(this.pointer, this.camera);
-      const hit = this.raycaster.intersectObjects(this.pocketMeshes, false)[0];
-      const next = hit?.object || null;
-      if (next === this.hoveredPocket) return;
-      if (this.hoveredPocket) this.hoveredPocket.material.emissiveIntensity = this.hoveredPocket.userData.baseEmissive;
-      this.hoveredPocket = next;
-      if (next) next.material.emissiveIntensity = 0.28;
-      this.renderer.domElement.style.cursor = next ? 'pointer' : 'grab';
+      const hits = this.raycaster.intersectObjects(this.pocketMeshes, false);
+      return hits[0]?.object || null;
+    };
+
+    canvas.addEventListener('pointermove', event => {
+      const pocket = updatePointer(event);
+      if (this.hoveredPocket && this.hoveredPocket !== pocket) {
+        this.hoveredPocket.material.emissiveIntensity = this.hoveredPocket.userData.baseEmissive;
+      }
+      this.hoveredPocket = pocket;
+      if (pocket) {
+        pocket.material.emissiveIntensity = 0.25;
+        canvas.style.cursor = 'pointer';
+      } else {
+        canvas.style.cursor = 'default';
+      }
     });
-    this.renderer.domElement.addEventListener('pointerleave', () => {
+
+    canvas.addEventListener('pointerleave', () => {
       if (this.hoveredPocket) this.hoveredPocket.material.emissiveIntensity = this.hoveredPocket.userData.baseEmissive;
       this.hoveredPocket = null;
-      this.renderer.domElement.style.cursor = 'grab';
+      canvas.style.cursor = 'default';
     });
-    this.renderer.domElement.addEventListener('click', () => {
-      if (!this.spinning && this.hoveredPocket) {
-        this.container.dispatchEvent(new CustomEvent('roulette-pocket-select', { detail: { number: this.hoveredPocket.userData.number } }));
-      }
+
+    canvas.addEventListener('pointerdown', event => {
+      const pocket = updatePointer(event);
+      if (pocket && typeof this.onPocketClick === 'function') this.onPocketClick(pocket.userData.number);
     });
   }
 
@@ -541,16 +527,24 @@ export class RouletteScene {
   }
 
   setOrder(order) {
+    if (this.machineRoot && this.ball) {
+      this.machineRoot.remove(this.ball);
+      this.machineRoot.remove(this.ballGlow);
+    }
     this.order = [...order];
     this.rotorAngle = 0;
-    this.ballAngle = this.launchAngle;
-    this.ballRadius = LAUNCH_RADIUS;
-    this.ballHeight = 1.22;
+    this.ballAngle = 0.15;
+    this.ballRadius = OUTER_TRACK_RADIUS;
+    this.ballHeight = OUTER_TRACK_Y;
     this.buildMachine();
-    this.updateBallTransform();
+    // buildMachine replaces machineRoot, so reattach the existing ball if present.
+    if (this.ball) {
+      this.machineRoot.add(this.ball);
+      this.machineRoot.add(this.ballGlow);
+      this.updateBallTransform();
+    }
   }
 
-  setCinematic() { /* retained as a harmless compatibility no-op */ }
   setSound(enabled) { this.audio.setEnabled(enabled); }
 
   spinTo(result, hooks = {}) {
@@ -561,25 +555,20 @@ export class RouletteScene {
     this.clearEffects();
     this.audio.launch();
     this.spinning = true;
-    this.controls.enabled = false;
     this.container.classList.add('is-spinning');
     this.container.classList.remove('is-win', 'is-loss');
 
     const now = performance.now();
-    const bettingDuration = this.reducedMotion ? 2600 : 7000;
-    const descentDuration = this.reducedMotion ? 1700 : 4300;
-    const captureDuration = this.reducedMotion ? 900 : 2200;
-    const collisionSigns = Array.from({ length: 3 }, () => (Math.random() < 0.5 ? -1 : 1));
+    const bettingDuration = this.reducedMotion ? 4200 : 9000;
+    const descentDuration = this.reducedMotion ? 2300 : 4800;
+    const captureDuration = this.reducedMotion ? 1200 : 2500;
 
     this.rotorAngle = normalizeAngle(this.rotorAngle);
-    this.wheelOmega = this.reducedMotion ? 1.25 : 1.72; // positive Y rotation appears counter-clockwise from above
-    this.ballAngle = this.launchAngle;
-    this.ballAngularVelocity = this.reducedMotion ? 4.2 : 2.8; // positive world-angle motion appears clockwise from the fixed camera
-    this.ballRadius = LAUNCH_RADIUS;
-    this.ballHeight = 1.22;
-    this.ballRadialVelocity = 0;
-    this.ballBounceHeight = 0;
-    this.ballBounceVelocity = 0;
+    this.wheelOmega = this.reducedMotion ? 0.72 : 0.92; // CCW from above
+    this.ballAngle = 0.15;
+    this.ballAngularVelocity = this.reducedMotion ? 4.7 : 6.4; // clockwise in fixed view
+    this.ballRadius = 6.24;
+    this.ballHeight = OUTER_TRACK_Y + 0.02;
     this.lastCountdown = null;
 
     this.spinState = {
@@ -598,10 +587,11 @@ export class RouletteScene {
       captureStarted: false,
       captureStartRadius: null,
       captureStartRelative: null,
-      captureOffset: null,
-      collisionThresholds: [0.34, 0.56, 0.74],
-      collisionSigns,
+      captureDelta: null,
+      collisionThresholds: [0.30, 0.52, 0.73],
       collisionIndex: 0,
+      bounceHeight: 0,
+      bounceVelocity: 0,
       resolve: null
     };
 
@@ -612,10 +602,10 @@ export class RouletteScene {
   updateSpin(now) {
     const state = this.spinState;
     if (!state) return;
-    const dt = Math.min(0.035, Math.max(0, (now - state.lastTime) / 1000));
+    const dt = Math.min(0.033, Math.max(0, (now - state.lastTime) / 1000));
     state.lastTime = now;
 
-    this.wheelOmega *= Math.exp(-0.018 * dt);
+    this.wheelOmega *= Math.exp(-0.010 * dt);
     this.rotorAngle += this.wheelOmega * dt;
     this.rotorGroup.rotation.y = this.rotorAngle;
 
@@ -640,58 +630,49 @@ export class RouletteScene {
 
   updateOuterTrack(now, dt, state) {
     const elapsed = now - state.startTime;
-    const launchProgress = clamp01(elapsed / (this.reducedMotion ? 420 : 680));
-    const cruiseTarget = this.reducedMotion ? 5.0 : 7.2;
-    const response = launchProgress < 1 ? 4.8 : 0.34;
-    this.ballAngularVelocity += (cruiseTarget - this.ballAngularVelocity) * clamp01(dt * response);
-    if (launchProgress >= 1) this.ballAngularVelocity *= Math.exp(-0.022 * dt);
+    const launchProgress = clamp01(elapsed / (this.reducedMotion ? 420 : 720));
+    const targetSpeed = this.reducedMotion ? 5.0 : 6.65;
+    this.ballAngularVelocity += (targetSpeed - this.ballAngularVelocity) * clamp01(dt * 3.4);
+    this.ballAngularVelocity *= Math.exp(-0.010 * dt);
     this.ballAngle += this.ballAngularVelocity * dt;
-
-    const targetRadius = lerp(LAUNCH_RADIUS, OUTER_TRACK_RADIUS, easeOutCubic(launchProgress));
-    this.ballRadius += (targetRadius - this.ballRadius) * clamp01(dt * 8.5);
-    this.ballHeight = lerp(1.22, 1.19, easeInOutCubic(launchProgress)) + Math.sin(elapsed * 0.018) * 0.009;
+    this.ballRadius = lerp(6.24, OUTER_TRACK_RADIUS, easeOutCubic(launchProgress));
+    this.ballHeight = OUTER_TRACK_Y + Math.sin(elapsed * 0.015) * 0.004;
 
     const remaining = Math.max(0, Math.ceil((state.betCloseAt - now) / 1000));
     if (remaining !== this.lastCountdown) {
       this.lastCountdown = remaining;
       this.emit('roulette-countdown', { seconds: remaining });
     }
-    this.audio.rail(Math.abs(this.ballAngularVelocity));
+    this.audio.rolling(Math.abs(this.ballAngularVelocity));
   }
 
   updateDescent(now, dt, state) {
     const progress = clamp01((now - state.betCloseAt) / state.descentDuration);
     this.setPhase('descending', { progress });
 
-    this.ballAngularVelocity *= Math.exp(-(this.reducedMotion ? 0.44 : 0.35) * dt);
+    this.ballAngularVelocity *= Math.exp(-0.26 * dt);
     this.ballAngle += this.ballAngularVelocity * dt;
 
-    const gravityTarget = lerp(OUTER_TRACK_RADIUS, POCKET_RADIUS + 0.28, easeInOutCubic(progress));
-    const centrifugalLift = clamp01((Math.abs(this.ballAngularVelocity) - 0.8) / 5.5) * 0.14;
-    const targetRadius = gravityTarget + centrifugalLift;
-    const radialAcceleration = (targetRadius - this.ballRadius) * 7.2 - this.ballRadialVelocity * 3.7;
-    this.ballRadialVelocity += radialAcceleration * dt;
-    this.ballRadius += this.ballRadialVelocity * dt;
+    const radiusCurve = smoothstep(progress);
+    this.ballRadius = lerp(OUTER_TRACK_RADIUS, POCKET_RADIUS + 0.34, radiusCurve);
 
     while (state.collisionIndex < state.collisionThresholds.length && progress >= state.collisionThresholds[state.collisionIndex]) {
-      const sign = state.collisionSigns[state.collisionIndex];
-      this.ballAngularVelocity += sign * (0.48 - state.collisionIndex * 0.09);
-      this.ballRadialVelocity += 0.16;
-      this.ballBounceVelocity = 1.05 - state.collisionIndex * 0.16;
+      const direction = state.collisionIndex % 2 === 0 ? -1 : 1;
+      this.ballAngle += direction * (0.035 + state.collisionIndex * 0.008);
+      state.bounceVelocity = 0.72 - state.collisionIndex * 0.10;
       this.audio.deflector();
       state.collisionIndex += 1;
     }
 
-    this.ballBounceVelocity -= 5.8 * dt;
-    this.ballBounceHeight += this.ballBounceVelocity * dt;
-    if (this.ballBounceHeight < 0) {
-      this.ballBounceHeight = 0;
-      if (this.ballBounceVelocity < -0.35) this.ballBounceVelocity *= -0.22;
-      else this.ballBounceVelocity = 0;
+    state.bounceVelocity -= 4.8 * dt;
+    state.bounceHeight += state.bounceVelocity * dt;
+    if (state.bounceHeight < 0) {
+      state.bounceHeight = 0;
+      state.bounceVelocity = Math.abs(state.bounceVelocity) > 0.24 ? -state.bounceVelocity * 0.16 : 0;
     }
 
-    this.ballHeight = this.surfaceHeight(this.ballRadius) + BALL_RADIUS + this.ballBounceHeight;
-    this.audio.rail(Math.max(0.5, Math.abs(this.ballAngularVelocity) * 0.7));
+    this.ballHeight = this.surfaceHeight(this.ballRadius) + BALL_RADIUS + state.bounceHeight;
+    this.audio.rolling(Math.max(0.6, Math.abs(this.ballAngularVelocity) * 0.7));
   }
 
   beginCapture(state) {
@@ -699,7 +680,7 @@ export class RouletteScene {
     state.captureStartRadius = this.ballRadius;
     state.captureStartRelative = normalizeAngle(this.ballAngle + this.rotorAngle);
     const targetRelative = this.baseAngle(state.index);
-    state.captureOffset = shortestAngle(targetRelative, state.captureStartRelative);
+    state.captureDelta = shortestAngle(state.captureStartRelative, targetRelative);
     this.audio.pocket();
     this.setPhase('settling');
   }
@@ -707,21 +688,20 @@ export class RouletteScene {
   updateCapture(now, state) {
     const progress = clamp01((now - state.captureAt) / state.captureDuration);
     const eased = easeOutCubic(progress);
-    const targetRelative = this.baseAngle(state.index);
     const arc = TAU / this.order.length;
-    const pocketRattle = Math.sin(progress * Math.PI * 7) * (1 - progress) * arc * 0.28;
-    const relative = targetRelative + state.captureOffset * (1 - eased) + pocketRattle;
+    const rattle = Math.sin(progress * Math.PI * 8) * (1 - progress) * arc * 0.20;
+    const relative = state.captureStartRelative + state.captureDelta * eased + rattle;
 
     this.ballAngle = relative - this.rotorAngle;
-    this.ballRadius = lerp(state.captureStartRadius, POCKET_RADIUS, easeInOutCubic(progress)) + Math.sin(progress * Math.PI * 5) * (1 - progress) * 0.045;
-    this.ballHeight = 0.66 + Math.abs(Math.sin(progress * Math.PI * 6)) * (1 - progress) * 0.15;
+    this.ballRadius = lerp(state.captureStartRadius, POCKET_RADIUS, smoothstep(progress));
+    this.ballHeight = POCKET_BALL_Y + Math.abs(Math.sin(progress * Math.PI * 7)) * (1 - progress) * 0.10;
   }
 
   finishSpin(state) {
     const targetRelative = this.baseAngle(state.index);
     this.ballAngle = targetRelative - this.rotorAngle;
     this.ballRadius = POCKET_RADIUS;
-    this.ballHeight = 0.66;
+    this.ballHeight = POCKET_BALL_Y;
     this.updateBallTransform();
 
     const resolve = state.resolve;
@@ -729,34 +709,35 @@ export class RouletteScene {
     this.spinning = false;
     this.wheelOmega = 0;
     this.ballAngularVelocity = 0;
-    this.controls.enabled = true;
     this.container.classList.remove('is-spinning');
     this.setPhase('resolved', { result: state.result });
     if (resolve) resolve();
   }
 
-  resolveResult(won, result) {
+  resolveResult(net, result) {
     if (!this.ready) return Promise.resolve();
-    this.resultLight.color.set(won ? 0xffc861 : 0xff596a);
-    this.resultLight.intensity = won ? 65 : 24;
-    this.container.classList.add(won ? 'is-win' : 'is-loss');
+    const won = net > 0;
+    const lost = net < 0;
+    this.resultLight.color.set(won ? 0xffc861 : lost ? 0xff596a : 0x7aa7ff);
+    this.resultLight.intensity = won ? 52 : lost ? 18 : 12;
+    this.container.classList.add(won ? 'is-win' : lost ? 'is-loss' : 'is-push');
     if (won) {
       this.audio.win();
       this.spawnConfetti(pocketColor(String(result)));
       this.spawnPulse(0xffd875);
-    } else {
+    } else if (lost) {
       this.audio.lose();
       this.spawnPulse(0xff596a);
     }
     this.highlightPocket(String(result), won);
-    return new Promise(resolve => window.setTimeout(resolve, this.reducedMotion ? 260 : 850));
+    return new Promise(resolve => window.setTimeout(resolve, this.reducedMotion ? 260 : 650));
   }
 
   highlightPocket(result, won) {
     const pocket = this.pocketMeshes.find(mesh => mesh.userData.number === result);
     if (!pocket) return;
-    pocket.material.emissive.set(won ? 0xffbd45 : 0xff4055);
-    pocket.material.emissiveIntensity = won ? 1.15 : 0.65;
+    pocket.material.emissive.set(won ? 0xffbd45 : 0x5ab7ff);
+    pocket.material.emissiveIntensity = won ? 1.0 : 0.65;
     window.setTimeout(() => {
       pocket.material.emissive.set(pocketColor(result));
       pocket.material.emissiveIntensity = pocket.userData.baseEmissive;
@@ -767,11 +748,9 @@ export class RouletteScene {
     if (!this.ready) return;
     const index = this.order.indexOf(String(result));
     if (index < 0) return;
-    this.rotorAngle = normalizeAngle(this.rotorAngle + 0.34);
-    this.rotorGroup.rotation.y = this.rotorAngle;
     this.ballAngle = this.baseAngle(index) - this.rotorAngle;
     this.ballRadius = POCKET_RADIUS;
-    this.ballHeight = 0.66;
+    this.ballHeight = POCKET_BALL_Y;
     this.updateBallTransform();
   }
 
@@ -780,68 +759,56 @@ export class RouletteScene {
     this.spinState = null;
     this.spinning = false;
     this.phase = 'idle';
-    this.container.dataset.phase = 'idle';
     this.rotorAngle = 0;
     this.wheelOmega = 0;
     this.rotorGroup.rotation.y = 0;
-    this.ballAngle = this.launchAngle;
+    this.ballAngle = 0.15;
     this.ballAngularVelocity = 0;
-    this.ballRadius = LAUNCH_RADIUS;
-    this.ballHeight = 1.22;
-    this.ballRadialVelocity = 0;
-    this.ballBounceHeight = 0;
-    this.ballBounceVelocity = 0;
+    this.ballRadius = OUTER_TRACK_RADIUS;
+    this.ballHeight = OUTER_TRACK_Y;
+    this.container.classList.remove('is-spinning', 'is-win', 'is-loss', 'is-push');
     this.updateBallTransform();
-    this.controls.enabled = true;
-    this.controls.target.copy(this.homeTarget);
-    this.camera.position.copy(this.homeCamera);
-    this.container.classList.remove('is-spinning', 'is-win', 'is-loss');
   }
 
-  spawnConfetti(baseColor) {
-    const origin = this.getBallWorldPosition().add(new THREE.Vector3(0, 0.25, 0));
-    const palette = [0xffd36b, 0xffffff, baseColor, 0x66e7c1];
-    for (let i = 0; i < 38; i++) {
-      const piece = new THREE.Mesh(
-        new THREE.BoxGeometry(0.035 + Math.random() * 0.04, 0.018, 0.055 + Math.random() * 0.06),
-        new THREE.MeshBasicMaterial({ color: palette[i % palette.length], transparent: true, opacity: 1 })
+  spawnConfetti(color) {
+    if (this.reducedMotion) return;
+    for (let i = 0; i < 52; i++) {
+      const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.10, 0.19),
+        new THREE.MeshBasicMaterial({ color: i % 3 === 0 ? 0xffd76a : color, side: THREE.DoubleSide })
       );
-      piece.position.copy(origin);
-      piece.rotation.set(Math.random() * TAU, Math.random() * TAU, Math.random() * TAU);
-      this.scene.add(piece);
+      mesh.position.set((Math.random() - 0.5) * 4, 4.2 + Math.random() * 2.5, (Math.random() - 0.5) * 4);
+      this.scene.add(mesh);
       this.confetti.push({
-        mesh: piece,
-        velocity: new THREE.Vector3((Math.random() - 0.5) * 3.2, 1.7 + Math.random() * 3.2, (Math.random() - 0.5) * 3.2),
-        life: 1 + Math.random() * 0.65,
-        age: 0,
-        spin: new THREE.Vector3(Math.random() * 5, Math.random() * 5, Math.random() * 5)
+        mesh,
+        velocity: new THREE.Vector3((Math.random() - 0.5) * 2.2, 0.2 + Math.random() * 1.4, (Math.random() - 0.5) * 2.2),
+        spin: new THREE.Vector3(Math.random() * 5, Math.random() * 5, Math.random() * 5),
+        life: 2.3 + Math.random() * 1.2
       });
     }
   }
 
   spawnPulse(color) {
-    const pulse = new THREE.Mesh(
-      new THREE.TorusGeometry(0.34, 0.03, 10, 48),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false })
+    const mesh = new THREE.Mesh(
+      new THREE.RingGeometry(3.8, 3.9, 96),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false })
     );
-    pulse.rotation.x = Math.PI / 2;
-    pulse.position.copy(this.getBallWorldPosition());
-    pulse.position.y += 0.03;
-    this.scene.add(pulse);
-    this.pulses.push({ mesh: pulse, age: 0, life: 0.95 });
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = 1.16;
+    this.scene.add(mesh);
+    this.pulses.push({ mesh, life: 1.0 });
   }
 
   updateEffects(dt) {
     for (let i = this.confetti.length - 1; i >= 0; i--) {
       const item = this.confetti[i];
-      item.age += dt;
-      item.velocity.y -= 5.8 * dt;
+      item.life -= dt;
+      item.velocity.y -= 2.7 * dt;
       item.mesh.position.addScaledVector(item.velocity, dt);
       item.mesh.rotation.x += item.spin.x * dt;
       item.mesh.rotation.y += item.spin.y * dt;
       item.mesh.rotation.z += item.spin.z * dt;
-      item.mesh.material.opacity = Math.max(0, 1 - item.age / item.life);
-      if (item.age >= item.life) {
+      if (item.life <= 0) {
         this.scene.remove(item.mesh);
         item.mesh.geometry.dispose();
         item.mesh.material.dispose();
@@ -850,11 +817,11 @@ export class RouletteScene {
     }
     for (let i = this.pulses.length - 1; i >= 0; i--) {
       const item = this.pulses[i];
-      item.age += dt;
-      const progress = item.age / item.life;
-      item.mesh.scale.setScalar(1 + progress * 5.5);
-      item.mesh.material.opacity = Math.max(0, 0.85 * (1 - progress));
-      if (progress >= 1) {
+      item.life -= dt;
+      const progress = 1 - item.life;
+      item.mesh.scale.setScalar(1 + progress * 0.55);
+      item.mesh.material.opacity = Math.max(0, item.life) * 0.55;
+      if (item.life <= 0) {
         this.scene.remove(item.mesh);
         item.mesh.geometry.dispose();
         item.mesh.material.dispose();
@@ -865,6 +832,7 @@ export class RouletteScene {
   }
 
   clearEffects() {
+    this.container.classList.remove('is-win', 'is-loss', 'is-push');
     for (const item of this.confetti) {
       this.scene.remove(item.mesh);
       item.mesh.geometry.dispose();
@@ -887,25 +855,24 @@ export class RouletteScene {
       this.ballHeight,
       Math.sin(this.ballAngle) * this.ballRadius
     );
-    local.y += this.machineRoot?.position.y || 0;
     this.ball.position.copy(local);
     this.ballGlow.position.copy(local);
   }
 
-  getBallWorldPosition() { return this.ball ? this.ball.position.clone() : new THREE.Vector3(); }
-
   animate(now) {
     if (this.disposed) return;
-    const dt = Math.min(0.05, this.clock.getDelta());
+    if (!this.lastFrame) this.lastFrame = now;
+    const dt = Math.min(0.035, Math.max(0, (now - this.lastFrame) / 1000));
+    this.lastFrame = now;
+
     if (this.spinState) this.updateSpin(now);
     this.updateEffects(dt);
-    if (!this.spinning) this.controls.update();
 
     const tangentialSpeed = Math.abs(this.ballAngularVelocity * Math.max(this.ballRadius, 0.1));
-    this.ball.rotation.x += dt * tangentialSpeed / BALL_RADIUS * 0.55;
-    this.ball.rotation.z += dt * tangentialSpeed / BALL_RADIUS * 0.24;
-    this.ballGlow.material.opacity = 0.075 + Math.sin(now * 0.004) * 0.018;
-    this.bloomPass.strength = 0.44 + (this.resultLight.intensity / 65) * 0.5;
+    this.ball.rotation.x += dt * tangentialSpeed / BALL_RADIUS * 0.50;
+    this.ball.rotation.z += dt * tangentialSpeed / BALL_RADIUS * 0.22;
+    this.ballGlow.material.opacity = 0.065 + Math.sin(now * 0.004) * 0.012;
+    this.bloomPass.strength = 0.34 + (this.resultLight.intensity / 52) * 0.38;
     this.composer.render();
   }
 
@@ -913,22 +880,19 @@ export class RouletteScene {
     if (!this.renderer || !this.camera) return;
     const width = Math.max(1, this.container.clientWidth);
     const height = Math.max(1, this.container.clientHeight);
+    this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(width, height, false);
-    this.composer?.setSize(width, height);
-    this.bloomPass?.setSize(width, height);
+    this.composer.setSize(width, height);
+    this.bloomPass.setSize(width, height);
   }
 
   disposeObject(root) {
     root.traverse(object => {
-      object.geometry?.dispose();
-      if (!object.material) return;
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      for (const material of materials) {
-        material.map?.dispose();
-        material.dispose();
-      }
+      object.geometry?.dispose?.();
+      if (Array.isArray(object.material)) object.material.forEach(material => material.dispose?.());
+      else object.material?.dispose?.();
+      if (object.material?.map) object.material.map.dispose?.();
     });
   }
 
@@ -936,11 +900,10 @@ export class RouletteScene {
     this.disposed = true;
     this.renderer?.setAnimationLoop(null);
     this.resizeObserver?.disconnect();
-    this.controls?.dispose();
     this.clearEffects();
-    if (this.scene) this.disposeObject(this.scene);
-    this.composer?.dispose();
+    this.disposeObject(this.scene);
+    this.composer?.dispose?.();
     this.renderer?.dispose();
-    this.renderer?.domElement.remove();
+    this.renderer?.domElement?.remove();
   }
 }

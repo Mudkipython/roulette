@@ -1,4 +1,4 @@
-# Roulette Lab 3D v3：Render 部署说明
+# Roulette Lab 3D v4：Render 部署说明
 
 本版使用 Three.js、Vite 和固定 Node 22 LTS。仓库中的 `package-lock.json` 已改为公共 npm registry，不再包含内部镜像地址。
 
@@ -59,7 +59,7 @@ built in ...
 
 确认 Build Command 包含 `npm run build`，Publish Directory 为 `dist`。
 
-### 页面还是旧动画
+### 页面还是旧动画或仍然需要手动发球
 
 确认 GitHub 最新 commit 已包含新的：
 

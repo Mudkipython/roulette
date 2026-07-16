@@ -1,10 +1,10 @@
-# Roulette Lab 3D — Physical Sequence Edition
+# Roulette Lab 3D — Automatic Table Edition
 
 A multilingual educational roulette simulator showing why negative expected value cannot be removed by betting systems.
 
-## What changed in v3
+## What changed in v4
 
-The single-round animation was rebuilt around the operating sequence of an automatic roulette machine:
+The simulator now behaves like a continuous automatic roulette table rather than a manually launched animation:
 
 1. The inner rotor turns counter-clockwise.
 2. The launcher sends the ball clockwise into the stationary outer track.
@@ -12,7 +12,7 @@ The single-round animation was rebuilt around the operating sequence of an autom
 4. Betting closes when the ball loses enough speed to leave the outer track.
 5. The ball moves inward along the sloped bowl, strikes deflectors, enters the rotating pocket ring, and settles.
 
-The camera stays in a stable wide view. There is no automatic follow camera.
+The camera is mathematically fixed for the entire session: there are no orbit controls, follow-camera transitions, shakes or loss animations.
 
 ## Features
 
@@ -20,12 +20,15 @@ The camera stays in a stable wide view. There is no automatic follow camera.
 - Clockwise automatic ball launch
 - Betting countdown with a real lock point at track release
 - Physically inspired deceleration, inward bowl movement, deflector impacts and pocket settling
-- Fixed wide camera with optional manual orbit/zoom before launch
+- Fully fixed camera with no orbit controls, following, damping or shake
+- Correct horizontal pocket geometry with the official wheel order and number colors
+- Ball and machine share one local coordinate system, so the ball settles on the pocket ring instead of the hub
+- Automatic recurring launches; one pause/resume control replaces per-round launch buttons
+- Multiple simultaneous bets with quick chips, undo, remove, clear and repeat-last-round controls
 - Clickable 3D pockets and felt-style betting board
-- Quick chips, straight-up and common outside bets
 - Restrained win effects, pocket glow and synthesized sound
 - European single-zero and American double-zero wheels
-- Single-round animation plus 100 / 1,000 / 10,000-round fast simulation
+- Continuous automatic rounds plus 100 / 1,000 / 10,000-round fast simulation based on the previous bet portfolio
 - Bankroll, turnover, expected loss, actual P/L and return-rate tracking
 - Chinese, English and French interface
 - Reduced-motion support and 2D fallback
@@ -71,3 +74,8 @@ Expected loss = total amount wagered × house edge
 ## License
 
 MIT. Three.js is used under its MIT license.
+
+## Preview files
+
+- `docs/preview-3d.png`: corrected horizontal pocket ring and outer-track ball
+- `docs/preview-interface.png`: automatic-round multiple-bet interface and 2D fallback

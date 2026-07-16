@@ -1,6 +1,6 @@
 {
   "name": "roulette-education-simulator",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
   "description": "Multilingual physically inspired 3D roulette education simulator demonstrating house edge and negative expected value.",

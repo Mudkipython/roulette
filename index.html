@@ -61,7 +61,7 @@
           <button id="resetButton" class="text-button" type="button" data-i18n="reset">重置</button>
         </div>
 
-        <div class="form-grid">
+        <div class="form-grid compact-config">
           <label>
             <span data-i18n="wheelType">轮盘类型</span>
             <select id="wheelType">
@@ -73,25 +73,13 @@
             <span data-i18n="startingBankroll">初始资金</span>
             <input id="startingBankroll" type="number" min="1" step="10" value="1000" />
           </label>
-          <label>
-            <span data-i18n="betAmount">每局下注</span>
-            <input id="betAmount" type="number" min="1" step="1" value="10" />
-          </label>
-          <label>
-            <span data-i18n="betType">下注类型</span>
-            <select id="betType"></select>
-          </label>
-          <label id="numberField" class="full-width is-hidden">
-            <span data-i18n="chooseNumber">选择号码</span>
-            <select id="straightNumber"></select>
-          </label>
         </div>
 
         <section class="betting-console" aria-labelledby="betTableHeading">
           <div class="betting-console-head">
             <div>
               <p class="section-kicker" data-i18n="interactiveBet">交互下注台</p>
-              <h3 id="betTableHeading" data-i18n="betTable">点击号码或外围下注</h3>
+              <h3 id="betTableHeading" data-i18n="betTable">选择筹码后可连续下多注</h3>
             </div>
             <div class="chip-tray" aria-label="Quick chip values">
               <button type="button" class="chip chip-1" data-chip="1">1</button>
@@ -102,29 +90,49 @@
             </div>
           </div>
           <div id="betBoard" class="bet-board" aria-label="Roulette betting board"></div>
-          <p class="bet-table-hint" data-i18n="betTableHint">也可以直接点击3D轮盘上的号码选择单号下注。</p>
+          <p class="bet-table-hint" data-i18n="betTableHint">小球在外沿转动期间可追加、撤销或清空下注；小球开始向内滑落时停止下注。</p>
+        </section>
+
+        <section class="bet-slip" aria-labelledby="betSlipHeading">
+          <div class="bet-slip-head">
+            <div>
+              <p class="section-kicker" data-i18n="currentBets">本局下注</p>
+              <h3 id="betSlipHeading" data-i18n="multiBetTitle">多注清单</h3>
+            </div>
+            <div class="bet-slip-actions">
+              <button id="undoBetButton" class="small-button" type="button" data-i18n="undoBet">撤销一步</button>
+              <button id="clearBetsButton" class="small-button danger-button" type="button" data-i18n="clearBets">清空</button>
+            </div>
+          </div>
+          <div id="betSlipList" class="bet-slip-list" aria-live="polite"></div>
+          <div class="bet-totals">
+            <div><span data-i18n="totalCurrentBet">本局总注</span><strong id="totalCurrentBet">¥0.00</strong></div>
+            <div><span data-i18n="availableBankroll">可用资金</span><strong id="availableBankroll">¥1,000.00</strong></div>
+          </div>
+          <button id="repeatBetsButton" class="repeat-button" type="button" data-i18n="repeatLastBets">重复上一局下注</button>
         </section>
 
         <div class="bet-summary" id="betSummary" aria-live="polite">
-          <div><span data-i18n="winProbability">中奖概率</span><strong id="probabilityValue">—</strong></div>
-          <div><span data-i18n="payout">净赔率</span><strong id="payoutValue">—</strong></div>
           <div><span data-i18n="houseEdge">赌场优势</span><strong id="edgeValue">—</strong></div>
-          <div><span data-i18n="expectedLossBet">每注预计损失</span><strong id="expectedLossValue">—</strong></div>
+          <div><span data-i18n="expectedLossBet">本局预计损失</span><strong id="expectedLossValue">—</strong></div>
+          <div><span data-i18n="selectedChip">当前筹码</span><strong id="selectedChipValue">10</strong></div>
+          <div><span data-i18n="roundMode">运行方式</span><strong data-i18n="autoRounds">自动连续开局</strong></div>
         </div>
 
-        <div class="action-row">
-          <button id="spinButton" class="primary-button launch-button" type="button" data-i18n="spin">发球</button>
-          <div class="batch-wrap">
-            <label>
-              <span class="sr-only" data-i18n="batchSize">批量局数</span>
-              <select id="batchSize" aria-label="Batch size">
-                <option value="100">100</option>
-                <option value="1000">1,000</option>
-                <option value="10000">10,000</option>
-              </select>
-            </label>
-            <button id="batchButton" class="secondary-button" type="button" data-i18n="batchRun">批量模拟</button>
-          </div>
+        <div class="action-row auto-action-row">
+          <button id="pauseButton" class="primary-button" type="button" data-i18n="pauseAfterRound">本局后暂停</button>
+          <button id="resetButtonSecondary" class="secondary-button" type="button" data-i18n="reset">重置</button>
+        </div>
+        <div class="batch-row">
+          <label>
+            <span data-i18n="batchSize">批量局数</span>
+            <select id="batchSize" aria-label="Batch size">
+              <option value="100">100</option>
+              <option value="1000">1,000</option>
+              <option value="10000">10,000</option>
+            </select>
+          </label>
+          <button id="batchButton" class="secondary-button" type="button" data-i18n="batchRun">按上一局下注批量模拟</button>
         </div>
         <div class="experience-toggles">
           <label class="toggle-control"><input id="soundToggle" type="checkbox" checked><span data-i18n="soundEffects">声音效果</span></label>
@@ -146,7 +154,7 @@
             <div class="scene-vignette" aria-hidden="true"></div>
             <div class="scene-hud">
               <span class="live-dot"></span>
-              <span data-i18n="dragHint">固定全景 · 发球前可拖动调整视角 · 点击号码下注</span>
+              <span data-i18n="dragHint">固定全景 · 自动发球 · 外沿阶段开放下注</span>
             </div>
             <div id="roundPhase" class="round-phase is-idle" aria-live="polite">
               <span id="roundPhaseLabel" data-i18n="readyToLaunch">准备发球</span>
