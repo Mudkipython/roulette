@@ -1,70 +1,65 @@
-# Roulette Lab — Why the House Wins
+# Roulette Lab 3D
 
-A multilingual (简体中文 / English / Français) educational roulette simulator. It demonstrates:
+A multilingual educational roulette simulator showing why negative expected value cannot be removed by betting systems.
 
-- European single-zero vs. American double-zero roulette
-- Straight, even-money, dozen, and column bets
-- Exact win probability, payout, house edge, and expected loss
-- Single-spin animation and 100 / 1,000 / 10,000-spin simulations
-- Bankroll, total turnover, observed return, and expected-loss chart
-- Gambler's fallacy, Martingale risk, variance, and responsible-play notes
+## Features
 
-![Desktop preview](docs/preview-desktop.png)
+- Three.js 3D roulette wheel with metallic materials, lighting, shadows and bloom
+- Ball launch, high-speed orbit, gradual track descent and deterministic landing in the sampled pocket
+- Optional cinematic follow camera, orbit/zoom controls and synthesized sound effects
+- Clickable 3D pockets and a felt-style betting board
+- Quick chips, straight-up and common outside bets
+- Win confetti, pocket glow and loss feedback
+- European single-zero and American double-zero wheels
+- Single-round animation plus 100 / 1,000 / 10,000-round fast simulation
+- Bankroll, turnover, expected loss, actual P/L and return-rate tracking
+- Chinese, English and French interface
+- Reduced-motion support and a 2D canvas fallback if WebGL initialization fails
+- No login, payments, server-side data or real-money gambling
 
-The app is fully static. It has no backend, no accounts, no payments, and no analytics. Random outcomes are generated locally with `crypto.getRandomValues()`.
-
-## Run locally
-
-From this directory:
+## Local development
 
 ```bash
-python3 -m http.server 8080
+npm install
+npm run dev
 ```
 
-Then open `http://localhost:8080`.
+Open the URL printed by Vite.
 
-## Deploy to Render
+## Production build
 
-### Option A — Blueprint
+```bash
+npm ci
+npm run build
+```
 
-1. Create a GitHub repository and upload all files in this folder.
-2. Confirm `render.yaml` is in the repository root.
-3. Open:
+The deployable output is generated in `dist/`.
+
+## Render deployment
+
+The included `render.yaml` configures a Render Static Site:
+
+- Build command: `npm ci && npm run build`
+- Publish directory: `dist`
+- Environment variables: none
+
+For a manually created Render Static Site, use the same values.
+
+## Educational model
+
+The result pocket is sampled first with `crypto.getRandomValues()`. The 3D animation then lands the ball in that sampled pocket. Animation does not alter probabilities.
+
+Standard roulette wagers share the same house edge on a given wheel:
+
+- European single-zero: `1 / 37 ≈ 2.70%`
+- American double-zero: `2 / 38 ≈ 5.26%`
+
+Expected loss is presented as:
 
 ```text
-https://dashboard.render.com/blueprint/new?repo=https://github.com/<USERNAME>/<REPOSITORY>
+Total amount wagered × house edge
 ```
-
-4. Select the repository and apply the Blueprint.
-
-Render will create a free static site using the included configuration.
-
-### Option B — Render dashboard
-
-1. In Render, choose **New → Static Site**.
-2. Connect the GitHub repository.
-3. Use these settings:
-   - Build command: `echo "Static educational site ready"`
-   - Publish directory: `.`
-4. Deploy.
-
-## Files
-
-- `index.html` — semantic page structure and educational content
-- `styles.css` — responsive visual design
-- `app.js` — wheel rendering, secure RNG, settlement logic, simulation, charts, and translations
-- `render.yaml` — Render Blueprint
-
-## Mathematical model
-
-For standard roulette bets:
-
-- European wheel house edge: `1 / 37 ≈ 2.7027%`
-- American wheel house edge: `2 / 38 ≈ 5.2632%`
-- Expected loss: `total wagered × house edge`
-
-Short-run outcomes can be positive, but the expectation remains negative.
 
 ## License
 
-MIT. Educational use encouraged. Do not present the simulator as a method for making money from gambling.
+MIT. Three.js is used under its MIT license.

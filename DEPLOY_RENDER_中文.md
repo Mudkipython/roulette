@@ -1,72 +1,105 @@
-# 上传 GitHub 并部署到 Render
+# Roulette Lab 3D：Render 部署说明
 
-这个项目是纯静态网站，不需要数据库、后端服务器或环境变量。
+新版使用 Three.js 和 Vite。上传新版文件后，Render 设置必须从旧版的“无构建”改成 Vite 构建。
 
-## 方法一：网页操作（最简单）
+## 一、推荐：使用 Blueprint
 
-1. 解压项目压缩包。
-2. 在 GitHub 新建一个空仓库，例如：
-   `roulette-education-simulator`
-3. 将解压后的全部文件上传到仓库根目录，尤其要确认以下文件存在：
+仓库根目录已经包含 `render.yaml`。
+
+1. 将项目全部文件上传到 GitHub 仓库根目录。
+2. 确认 GitHub 中可以看到：
    - `index.html`
-   - `styles.css`
    - `app.js`
+   - `src/roulette3d.js`
+   - `package.json`
+   - `package-lock.json`
    - `render.yaml`
-4. 将下面地址里的用户名和仓库名换成你自己的，然后打开：
+3. Render Dashboard 选择 **New → Blueprint**。
+4. 选择对应 GitHub 仓库。
+5. Blueprint 文件路径保持 `render.yaml`。
+6. 点击 **Apply**。
+
+不需要数据库和环境变量。
+
+## 二、已有 Static Site：修改设置
+
+如果你已经创建了 `roulette` Static Site，在 Render 中打开：
+
+**Settings → Build & Deploy**
+
+改成：
 
 ```text
-https://dashboard.render.com/blueprint/new?repo=https://github.com/<你的用户名>/<仓库名>
+Root Directory: 留空
+Build Command: npm ci && npm run build
+Publish Directory: dist
+Branch: main
+Auto Deploy: Yes
 ```
 
-5. 若 Render 要求授权 GitHub，按提示授权。
-6. 确认 Blueprint 中出现一个名为 `roulette-education-simulator` 的 Static Site。
-7. 点击 **Apply**。
-8. 部署完成后，Render 会提供一个 `onrender.com` 地址。
-
-## 方法二：Git 命令上传
-
-在解压后的项目目录运行：
-
-```bash
-git init
-git add .
-git commit -m "Add multilingual roulette education simulator"
-git branch -M main
-git remote add origin https://github.com/<你的用户名>/<仓库名>.git
-git push -u origin main
-```
-
-然后打开：
+然后点击 **Save Changes**，再选择：
 
 ```text
-https://dashboard.render.com/blueprint/new?repo=https://github.com/<你的用户名>/<仓库名>
+Manual Deploy → Deploy latest commit
 ```
 
-## 不使用 Blueprint，手动创建 Static Site
+### 旧设置不能继续使用
 
-也可以在 Render Dashboard 选择：
+旧版曾使用：
 
 ```text
-New → Static Site
+Build Command: echo "No build required"
+Publish Directory: .
 ```
 
-设置为：
+3D新版不能继续使用这两个值，否则 Render 会发布源文件而不是 Vite 生产包。
 
-- Build Command: `echo "Static educational site ready"`
-- Publish Directory: `.`
+## 三、GitHub 上传注意事项
 
-## 本地预览
-
-```bash
-python3 -m http.server 8080
-```
-
-浏览器打开：
+需要上传源码和锁文件，但不要上传：
 
 ```text
-http://localhost:8080
+node_modules/
+dist/
 ```
 
-## 后续修改
+Render 会根据 `package-lock.json` 自动安装依赖并生成 `dist/`。
 
-修改代码并推送到 GitHub 后，Render 默认会自动重新部署。
+## 四、成功日志
+
+正常部署会出现类似：
+
+```text
+npm ci
+npm run build
+vite build
+built in ...
+```
+
+随后状态变成 **Live**。
+
+## 五、常见错误
+
+### `Could not find package.json`
+
+说明 `package.json` 不在 Render 设置的 Root Directory 中。通常将 Root Directory 留空，并把所有文件放在仓库根目录即可。
+
+### `Publish directory dist does not exist`
+
+检查 Build Command 是否为：
+
+```text
+npm ci && npm run build
+```
+
+### 页面仍是旧版本
+
+执行一次：
+
+```text
+Manual Deploy → Clear build cache & deploy
+```
+
+### 3D画面不可用
+
+网站会自动显示2D后备轮盘。先确认浏览器已启用 WebGL，并尝试最新版 Chrome、Edge、Safari 或 Firefox。

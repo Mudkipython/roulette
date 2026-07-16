@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="A multilingual educational roulette simulator demonstrating house edge, expected loss, turnover, variance, and gambler's fallacy." />
   <meta name="theme-color" content="#09111f" />
-  <title>Roulette Lab — Why the House Wins</title>
+  <title>Roulette Lab 3D — Why the House Wins</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -87,6 +87,24 @@
           </label>
         </div>
 
+        <section class="betting-console" aria-labelledby="betTableHeading">
+          <div class="betting-console-head">
+            <div>
+              <p class="section-kicker" data-i18n="interactiveBet">交互下注台</p>
+              <h3 id="betTableHeading" data-i18n="betTable">点击号码或外围下注</h3>
+            </div>
+            <div class="chip-tray" aria-label="Quick chip values">
+              <button type="button" class="chip chip-1" data-chip="1">1</button>
+              <button type="button" class="chip chip-5" data-chip="5">5</button>
+              <button type="button" class="chip chip-10 is-active" data-chip="10">10</button>
+              <button type="button" class="chip chip-25" data-chip="25">25</button>
+              <button type="button" class="chip chip-100" data-chip="100">100</button>
+            </div>
+          </div>
+          <div id="betBoard" class="bet-board" aria-label="Roulette betting board"></div>
+          <p class="bet-table-hint" data-i18n="betTableHint">也可以直接点击3D轮盘上的号码选择单号下注。</p>
+        </section>
+
         <div class="bet-summary" id="betSummary" aria-live="polite">
           <div><span data-i18n="winProbability">中奖概率</span><strong id="probabilityValue">—</strong></div>
           <div><span data-i18n="payout">净赔率</span><strong id="payoutValue">—</strong></div>
@@ -95,7 +113,7 @@
         </div>
 
         <div class="action-row">
-          <button id="spinButton" class="primary-button" type="button" data-i18n="spin">旋转一次</button>
+          <button id="spinButton" class="primary-button launch-button" type="button" data-i18n="spin">发球</button>
           <div class="batch-wrap">
             <label>
               <span class="sr-only" data-i18n="batchSize">批量局数</span>
@@ -108,6 +126,10 @@
             <button id="batchButton" class="secondary-button" type="button" data-i18n="batchRun">批量模拟</button>
           </div>
         </div>
+        <div class="experience-toggles">
+          <label class="toggle-control"><input id="cinematicToggle" type="checkbox" checked><span data-i18n="cinematicCamera">追随镜头</span></label>
+          <label class="toggle-control"><input id="soundToggle" type="checkbox" checked><span data-i18n="soundEffects">声音效果</span></label>
+        </div>
         <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
       </div>
 
@@ -119,9 +141,19 @@
           </div>
           <div id="resultBadge" class="result-badge result-green">—</div>
         </div>
-        <div class="wheel-stage">
-          <div class="pointer" aria-hidden="true"></div>
-          <canvas id="wheelCanvas" width="720" height="720" aria-label="Roulette wheel"></canvas>
+        <div class="wheel-stage wheel-stage-3d">
+          <div id="roulette3D" class="roulette-3d" aria-label="Interactive 3D roulette scene">
+            <canvas id="wheelCanvas" width="720" height="720" aria-label="2D roulette fallback"></canvas>
+            <div class="scene-vignette" aria-hidden="true"></div>
+            <div class="scene-hud">
+              <span class="live-dot"></span>
+              <span data-i18n="dragHint">拖动旋转视角 · 滚轮缩放 · 点击号码下注</span>
+            </div>
+            <div id="cinematicResult" class="cinematic-result" aria-live="polite">
+              <span id="cinematicResultLabel">—</span>
+              <strong id="cinematicResultNumber">—</strong>
+            </div>
+          </div>
         </div>
         <div class="last-result">
           <span data-i18n="lastResult">最近结果</span>
@@ -237,6 +269,6 @@
     <p><span data-i18n="rngNote">随机数来源：</span> <code>crypto.getRandomValues()</code></p>
   </footer>
 
-  <script src="app.js"></script>
+  <script type="module" src="/app.js"></script>
 </body>
 </html>
